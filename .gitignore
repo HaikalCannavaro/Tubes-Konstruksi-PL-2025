@@ -1,0 +1,21 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build folders
+bin/
+obj/
+
+# Others
+*.log
+*.pdb
+*.mdb
+*.cache
+*.zip
+*.rar
+*.7z
+*.tar
+*.tar.gz
+.DS_Store
+Thumbs.db
