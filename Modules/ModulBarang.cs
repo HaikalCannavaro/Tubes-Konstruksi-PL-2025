@@ -57,6 +57,61 @@ namespace AplikasiInventarisToko.Managers
             Console.ReadKey();
         }
 
+        // Metode terpisah untuk mencari barang berdasarkan ID
+        public static Barang CariBarangById()
+        {
+            var daftarBarang = Manager.GetSemuaBarang();
+
+            if (daftarBarang.Count == 0)
+            {
+                Console.WriteLine("Tidak ada barang tersedia.");
+                return null;
+            }
+
+            foreach (var barang in daftarBarang)
+            {
+                Console.WriteLine($"[{barang.Id}] {barang.Nama} - Stok: {barang.Stok}");
+            }
+
+            Console.Write("\nMasukkan ID barang yang dicari: ");
+            string id = Console.ReadLine();
+
+            var barang = Manager.GetBarangById(id);
+
+            if (barang == null)
+            {
+                Console.WriteLine("Barang tidak ditemukan.");
+                return null;
+            }
+
+            return barang;
+        }
+
+        // Implementasi fitur Cari Barang
+        public static void CariBarang()
+        {
+            Console.Clear();
+            Console.WriteLine("=== CARI BARANG ===");
+
+            var barang = CariBarangById();
+
+            if (barang != null)
+            {
+                Console.WriteLine("\nDetail Barang:");
+                Console.WriteLine($"ID: {barang.Id}");
+                Console.WriteLine($"Nama: {barang.Nama}");
+                Console.WriteLine($"Kategori: {barang.Kategori}");
+                Console.WriteLine($"Stok: {barang.Stok}");
+                Console.WriteLine($"Harga Beli: {barang.HargaBeli:C}");
+                Console.WriteLine($"Harga Jual: {barang.HargaJual:C}");
+                Console.WriteLine($"Supplier: {barang.Supplier}");
+                Console.WriteLine($"Tanggal Masuk: {barang.TanggalMasuk}");
+            }
+
+            Console.WriteLine("\nTekan sembarang tombol untuk kembali ke menu utama...");
+            Console.ReadKey();
+        }
+
         public static void EditBarang()
         {
             Console.Clear();
