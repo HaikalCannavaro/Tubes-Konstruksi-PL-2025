@@ -11,7 +11,6 @@
     <Folder Include="Managers\" />
     <Folder Include="API\" />
     <Folder Include="Models\" />
-    <Folder Include="Utils\" />
   </ItemGroup>
 
 </Project>
