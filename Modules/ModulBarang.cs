@@ -1,60 +1,15 @@
 ﻿using AplikasiInventarisToko.Models;
 using AplikasiInventarisToko.Utils;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AplikasiInventarisToko.Managers
 {
     public static class ModulBarang
     {
-        private static BarangManager<Barang> _manager = new BarangManager<Barang>();
+        private static BarangManager<Barang> _barangManager = new BarangManager<Barang>();
+        public static BarangManager<Barang> Manager => _barangManager;
 
-        public static void TampilkanMenuBarang()
-        {
-            bool isRunning = true;
-
-            while (isRunning)
-            {
-                Console.Clear();
-                Console.WriteLine("========================================");
-                Console.WriteLine("         MENU KELOLA BARANG            ");
-                Console.WriteLine("========================================");
-                Console.WriteLine("1. Tambah Barang Baru");
-                Console.WriteLine("2. Edit Barang");
-                Console.WriteLine("3. Lihat Semua Barang");
-                Console.WriteLine("0. Kembali ke Menu Utama");
-                Console.WriteLine("----------------------------------------");
-
-                Console.Write("\nPilih menu: ");
-                string input = Console.ReadLine();
-
-                switch (input)
-                {
-                    case "1":
-                        TambahBarangBaru();
-                        break;
-                    case "2":
-                        EditBarang();
-                        break;
-                    case "3":
-                        LihatSemuaBarang();
-                        break;
-                    case "0":
-                        isRunning = false;
-                        break;
-                    default:
-                        Console.WriteLine("Menu tidak tersedia. Silakan pilih kembali.");
-                        Console.WriteLine("\nTekan sembarang tombol untuk melanjutkan...");
-                        Console.ReadKey();
-                        break;
-                }
-            }
-
-        }
-        private static void TambahBarangBaru()
+        public static void TambahBarangBaru()
         {
             Console.Clear();
             Console.WriteLine("=== TAMBAH BARANG BARU ===");
@@ -81,7 +36,7 @@ namespace AplikasiInventarisToko.Managers
 
                 Barang barangBaru = new Barang(nama, kategori, stok, hargaBeli, hargaJual, supplier);
 
-                bool sukses = _manager.TambahBarang(barangBaru);
+                bool sukses = Manager.TambahBarang(barangBaru);
 
                 if (sukses)
                 {
@@ -98,21 +53,20 @@ namespace AplikasiInventarisToko.Managers
                 Console.WriteLine($"\nError: {ex.Message}");
             }
 
-            Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
+            Console.WriteLine("\nTekan sembarang tombol untuk kembali ke menu utama...");
             Console.ReadKey();
         }
 
-        private static void EditBarang()
+        public static void EditBarang()
         {
             Console.Clear();
             Console.WriteLine("=== EDIT BARANG ===");
-            Console.WriteLine("Daftar Barang Tersedia:");
 
-            var daftarBarang = _manager.GetSemuaBarang();
+            var daftarBarang = Manager.GetSemuaBarang();
 
             if (daftarBarang.Count == 0)
             {
-                Console.WriteLine("Tidak ada barang tersedia.");
+                Console.WriteLine("Tidak ada barang untuk diedit.");
                 Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
                 Console.ReadKey();
                 return;
@@ -126,11 +80,11 @@ namespace AplikasiInventarisToko.Managers
             Console.Write("\nMasukkan ID barang yang ingin diedit: ");
             string id = Console.ReadLine();
 
-            var barangLama = _manager.GetBarangById(id);
+            var barangLama = Manager.GetBarangById(id);
 
             if (barangLama == null)
             {
-                Console.WriteLine("Barang dengan ID tersebut tidak ditemukan.");
+                Console.WriteLine("Barang tidak ditemukan.");
                 Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
                 Console.ReadKey();
                 return;
@@ -153,12 +107,12 @@ namespace AplikasiInventarisToko.Managers
                 int stok = string.IsNullOrEmpty(stokInput) ? barangLama.Stok : ValidasiInput.ValidasiAngka(stokInput);
 
                 Console.Write($"Harga Beli [{barangLama.HargaBeli}]: ");
-                string hargaBeliInput = Console.ReadLine();
-                decimal hargaBeli = string.IsNullOrEmpty(hargaBeliInput) ? barangLama.HargaBeli : ValidasiInput.ValidasiDecimal(hargaBeliInput);
+                string beliInput = Console.ReadLine();
+                decimal hargaBeli = string.IsNullOrEmpty(beliInput) ? barangLama.HargaBeli : ValidasiInput.ValidasiDecimal(beliInput);
 
                 Console.Write($"Harga Jual [{barangLama.HargaJual}]: ");
-                string hargaJualInput = Console.ReadLine();
-                decimal hargaJual = string.IsNullOrEmpty(hargaJualInput) ? barangLama.HargaJual : ValidasiInput.ValidasiDecimal(hargaJualInput);
+                string jualInput = Console.ReadLine();
+                decimal hargaJual = string.IsNullOrEmpty(jualInput) ? barangLama.HargaJual : ValidasiInput.ValidasiDecimal(jualInput);
 
                 Console.Write($"Supplier [{barangLama.Supplier}]: ");
                 string supplier = Console.ReadLine();
@@ -170,32 +124,25 @@ namespace AplikasiInventarisToko.Managers
                     TanggalMasuk = barangLama.TanggalMasuk
                 };
 
-                bool sukses = _manager.EditBarang(id, barangBaru);
+                bool sukses = Manager.EditBarang(id, barangBaru);
 
-                if (sukses)
-                {
-                    Console.WriteLine("\nBarang berhasil diperbarui!");
-                }
-                else
-                {
-                    Console.WriteLine("\nGagal memperbarui barang.");
-                }
+                Console.WriteLine(sukses ? "\nBarang berhasil diperbarui!" : "\nGagal memperbarui barang.");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"\nError: {ex.Message}");
             }
 
-            Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
+            Console.WriteLine("\nTekan sembarang tombol untuk kembali ke menu utama...");
             Console.ReadKey();
         }
 
-        private static void LihatSemuaBarang()
+        public static void LihatSemuaBarang()
         {
             Console.Clear();
             Console.WriteLine("=== DAFTAR SEMUA BARANG ===");
 
-            var daftarBarang = _manager.GetSemuaBarang();
+            var daftarBarang = Manager.GetSemuaBarang();
 
             if (daftarBarang.Count == 0)
             {
