@@ -8,9 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Managers\" />
     <Folder Include="API\" />
-    <Folder Include="Models\" />
   </ItemGroup>
 
 </Project>
