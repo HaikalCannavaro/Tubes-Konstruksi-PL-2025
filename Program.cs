@@ -9,10 +9,6 @@ namespace AplikasiInventarisToko
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("========================================");
-            Console.WriteLine("    APLIKASI INVENTARIS BARANG TOKO     ");
-            Console.WriteLine("========================================");
-
             bool isRunning = true;
 
             while (isRunning)
@@ -21,37 +17,39 @@ namespace AplikasiInventarisToko
                 Console.WriteLine("========================================");
                 Console.WriteLine("    APLIKASI INVENTARIS BARANG TOKO     ");
                 Console.WriteLine("========================================");
-                Console.WriteLine("1. Tambah & Edit Barang (Haikal)");
-                Console.WriteLine("2. Hapus & Pencarian Barang (Subhan)");
-                Console.WriteLine("3. Transaksi Barang Keluar/Masuk (Aslam)");
-                Console.WriteLine("4. Laporan & Export Data (Angga)");
-                Console.WriteLine("5. Runtime Config & Validasi Input (Devon)");
+                Console.WriteLine("1. Tambah Barang");
+                Console.WriteLine("2. Edit Barang");
+                Console.WriteLine("3. Hapus Barang");
+                Console.WriteLine("4. Cari Barang");
+                Console.WriteLine("5. Tampilkan Semua Barang");
+                Console.WriteLine("6. Transaksi Barang Masuk");
+                Console.WriteLine("7. Transaksi Barang Keluar");
+                Console.WriteLine("8. Laporan Inventaris");
+                Console.WriteLine("9. Export Data");
+                Console.WriteLine("10. Konfigurasi Aplikasi");
                 Console.WriteLine("0. Keluar");
                 Console.WriteLine("----------------------------------------");
 
-                Console.Write("\nPilih menu: ");
+                Console.Write("Pilih menu: ");
                 string input = Console.ReadLine();
 
                 switch (input)
                 {
                     case "1":
-                        ModulBarang.TampilkanMenuBarang();
+                        ModulBarang.TambahBarangBaru();
                         break;
                     case "2":
-                        break;
-                    case "3":
-                        break;
-                    case "4":
+                        ModulBarang.EditBarang();
                         break;
                     case "5":
+                        ModulBarang.LihatSemuaBarang();
                         break;
                     case "0":
-                        Console.WriteLine("Terima kasih telah menggunakan aplikasi ini.");
+                        Console.WriteLine("\nTerima kasih telah menggunakan aplikasi ini.");
                         isRunning = false;
                         break;
                     default:
-                        Console.WriteLine("Menu tidak tersedia. Silakan pilih kembali.");
-                        Console.WriteLine("\nTekan sembarang tombol untuk melanjutkan...");
+                        Console.WriteLine("Menu tidak tersedia. Tekan sembarang tombol...");
                         Console.ReadKey();
                         break;
                 }
