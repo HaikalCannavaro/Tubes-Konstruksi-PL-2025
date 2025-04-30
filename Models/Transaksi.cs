@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace AplikasiInventarisToko.Models
 {
@@ -26,10 +27,9 @@ namespace AplikasiInventarisToko.Models
             Tanggal = DateTime.Now;
             Keterangan = keterangan;
         }
-
         public override string ToString()
         {
-            return $"[{Id}] {Jenis} Barang: {BarangId}, Jumlah: {Jumlah}, Tanggal: {Tanggal}, Keterangan: {Keterangan}";
+            return $"ID: {Id}, Barang ID: {BarangId}, Jenis: {Jenis}, Jumlah: {Jumlah}, Tanggal: {Tanggal.ToShortDateString()}, Keterangan: {Keterangan}";
         }
     }
 }

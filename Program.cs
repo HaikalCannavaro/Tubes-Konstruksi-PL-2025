@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using AplikasiInventarisToko.Managers;
 using AplikasiInventarisToko.Models;
+using AplikasiInventarisToko.Utils;
+using AplikasiInventarisToko.Managers;
 
 namespace AplikasiInventarisToko
 {
@@ -53,8 +54,14 @@ namespace AplikasiInventarisToko
                         ModulBarang.LihatSemuaBarang();
                         break;
                     case "6":
+                        ModulTransaksi.TransaksiBarangMasuk();
+                        break;
                     case "7":
+                        ModulTransaksi.TransaksiBarangKeluar();
+                        break;
                     case "8":
+                        ModulTransaksi.LihatRiwayatTransaksi();
+                        break;
                     case "9":
                     case "10":
                         Console.WriteLine("Fitur belum tersedia. Tekan sembarang tombol...");
