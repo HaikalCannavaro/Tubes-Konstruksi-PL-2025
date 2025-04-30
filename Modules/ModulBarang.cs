@@ -57,60 +57,52 @@ namespace AplikasiInventarisToko.Managers
             Console.ReadKey();
         }
 
-        // Metode terpisah untuk mencari barang berdasarkan ID
-        public static Barang CariBarangById()
-        {
-            var daftarBarang = Manager.GetSemuaBarang();
-
-            if (daftarBarang.Count == 0)
-            {
-                Console.WriteLine("Tidak ada barang tersedia.");
-                return null;
-            }
-
-            foreach (var barang in daftarBarang)
-            {
-                Console.WriteLine($"[{barang.Id}] {barang.Nama} - Stok: {barang.Stok}");
-            }
-
-            Console.Write("\nMasukkan ID barang yang dicari: ");
-            string id = Console.ReadLine();
-
-            var barang = Manager.GetBarangById(id);
-
-            if (barang == null)
-            {
-                Console.WriteLine("Barang tidak ditemukan.");
-                return null;
-            }
-
-            return barang;
-        }
-
         // Implementasi fitur Cari Barang
         public static void CariBarang()
         {
             Console.Clear();
             Console.WriteLine("=== CARI BARANG ===");
 
-            var barang = CariBarangById();
+            var daftarBarang = Manager.GetSemuaBarang();
 
-            if (barang != null)
+            if (daftarBarang.Count == 0)
             {
-                Console.WriteLine("\nDetail Barang:");
-                Console.WriteLine($"ID: {barang.Id}");
-                Console.WriteLine($"Nama: {barang.Nama}");
-                Console.WriteLine($"Kategori: {barang.Kategori}");
-                Console.WriteLine($"Stok: {barang.Stok}");
-                Console.WriteLine($"Harga Beli: {barang.HargaBeli:C}");
-                Console.WriteLine($"Harga Jual: {barang.HargaJual:C}");
-                Console.WriteLine($"Supplier: {barang.Supplier}");
-                Console.WriteLine($"Tanggal Masuk: {barang.TanggalMasuk}");
+                Console.WriteLine("Tidak ada barang tersedia.");
+            }
+            else
+            {
+                foreach (var barang in daftarBarang)
+                {
+                    Console.WriteLine($"[{barang.Id}] {barang.Nama} - Stok: {barang.Stok}");
+                }
+
+                Console.Write("\nMasukkan ID barang yang dicari: ");
+                string id = Console.ReadLine();
+
+                var item = Manager.GetBarangById(id);
+
+                if (item != null)
+                {
+                    Console.WriteLine("\nDetail Barang:");
+                    Console.WriteLine($"ID: {item.Id}");
+                    Console.WriteLine($"Nama: {item.Nama}");
+                    Console.WriteLine($"Kategori: {item.Kategori}");
+                    Console.WriteLine($"Stok: {item.Stok}");
+                    Console.WriteLine($"Harga Beli: {item.HargaBeli:C}");
+                    Console.WriteLine($"Harga Jual: {item.HargaJual:C}");
+                    Console.WriteLine($"Supplier: {item.Supplier}");
+                    Console.WriteLine($"Tanggal Masuk: {item.TanggalMasuk}");
+                }
+                else
+                {
+                    Console.WriteLine("Barang tidak ditemukan.");
+                }
             }
 
             Console.WriteLine("\nTekan sembarang tombol untuk kembali ke menu utama...");
             Console.ReadKey();
         }
+
 
         public static void EditBarang()
         {
