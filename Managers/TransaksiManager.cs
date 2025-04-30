@@ -1,4 +1,5 @@
 ﻿using AplikasiInventarisToko.Models;
+using AplikasiInventarisToko.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,11 +28,9 @@ namespace AplikasiInventarisToko.Managers
 
             try
             {
-                // Buat transaksi
                 var transaksi = new Transaksi(barangId, "MASUK", jumlah, keterangan);
                 _daftarTransaksi.Add(transaksi);
 
-                // Update stok barang
                 var barangBaru = new Barang(
                     barang.Nama,
                     barang.Kategori,
@@ -66,11 +65,9 @@ namespace AplikasiInventarisToko.Managers
 
             try
             {
-                // Buat transaksi
                 var transaksi = new Transaksi(barangId, "KELUAR", jumlah, keterangan);
                 _daftarTransaksi.Add(transaksi);
 
-                // Update stok barang
                 var barangBaru = new Barang(
                     barang.Nama,
                     barang.Kategori,
