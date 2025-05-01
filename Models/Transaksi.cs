@@ -7,7 +7,7 @@ namespace AplikasiInventarisToko.Models
     {
         public string Id { get; set; }
         public string BarangId { get; set; }
-        public string Jenis { get; set; } // "MASUK" atau "KELUAR"
+        public string Jenis { get; set; } 
         public int Jumlah { get; set; }
         public DateTime Tanggal { get; set; }
         public string Keterangan { get; set; }

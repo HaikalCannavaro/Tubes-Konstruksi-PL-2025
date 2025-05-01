@@ -34,7 +34,11 @@ namespace AplikasiInventarisToko.Managers
                 Console.Write("Supplier: ");
                 string supplier = Console.ReadLine();
 
-                Barang barangBaru = new Barang(nama, kategori, stok, hargaBeli, hargaJual, supplier);
+                Barang barangBaru = new Barang(nama, kategori, stok, hargaBeli, hargaJual, supplier)
+                {
+                    StokAwal = stok
+                };
+
 
                 bool sukses = Manager.TambahBarang(barangBaru);
 
@@ -168,7 +172,8 @@ namespace AplikasiInventarisToko.Managers
                 Barang barangBaru = new Barang(nama, kategori, stok, hargaBeli, hargaJual, supplier)
                 {
                     Id = barangLama.Id,
-                    TanggalMasuk = barangLama.TanggalMasuk
+                    TanggalMasuk = barangLama.TanggalMasuk,
+                    StokAwal = barangLama.StokAwal
                 };
 
                 bool sukses = Manager.EditBarang(id, barangBaru);
@@ -218,75 +223,5 @@ namespace AplikasiInventarisToko.Managers
             Console.ReadKey();
         }
 
-        public static void LihatLaporanInventaris()
-        {
-            Console.Clear();
-            Console.WriteLine("=== Laporan Inventaris Barang ===");
-
-            Console.Write("Masukkan tanggal referensi (format: yyyy-MM-dd): ");
-            if (!DateTime.TryParse(Console.ReadLine(), out DateTime tanggalReferensi))
-            {
-                Console.WriteLine("Format tanggal tidak valid.");
-                Console.WriteLine("Tekan Enter untuk kembali...");
-                Console.ReadLine();
-                return;
-            }
-
-            var daftarBarang = _barangManager.GetSemuaBarang();
-
-            if (daftarBarang.Count == 0)
-            {
-                Console.WriteLine("Tidak ada data barang.");
-            }
-            else
-            {
-                foreach (var barang in daftarBarang)
-                {
-                    double selisihHari = (tanggalReferensi - barang.TanggalMasuk).TotalDays;
-                    string status = selisihHari < 30 ? "Fast-moving" : "Slow-moving";
-
-                    Console.WriteLine($"ID: {barang.Id}");
-                    Console.WriteLine($"Nama: {barang.Nama}");
-                    Console.WriteLine($"Tanggal Masuk: {barang.TanggalMasuk:dd-MM-yyyy}");
-                    Console.WriteLine($"Selisih Hari: {selisihHari} hari");
-                    Console.WriteLine($"Status: {status}");
-                    Console.WriteLine("-------------------------------------");
-                }
-            }
-
-            Console.WriteLine("Tekan Enter untuk kembali ke menu...");
-            Console.ReadLine();
-        }
-
-
-        public static void ExportDataKeFile()
-        {
-            Console.Clear();
-            Console.WriteLine("=== Export Data Barang ===");
-            Console.Write("Masukkan nama file (contoh: data_barang.csv): ");
-            string namaFile = Console.ReadLine();
-
-            var daftarBarang = _barangManager.GetSemuaBarang();
-            if (daftarBarang.Count == 0)
-            {
-                Console.WriteLine("Tidak ada data yang bisa diekspor.");
-            }
-            else
-            {
-                using (StreamWriter writer = new StreamWriter(namaFile))
-                {
-                    writer.WriteLine("Id,Nama,Kategori,Supplier,HargaBeli,HargaJual,Stok,TanggalMasuk");
-                    foreach (var barang in daftarBarang)
-                    {
-                        writer.WriteLine($"{barang.Id},{barang.Nama},{barang.Kategori},{barang.Supplier},{barang.HargaBeli},{barang.HargaJual},{barang.Stok},{barang.TanggalMasuk:yyyy-MM-dd}");
-                    }
-                }
-
-                Console.WriteLine($"Data berhasil diekspor ke file '{namaFile}'.");
-            }
-
-            Console.WriteLine("Tekan Enter untuk kembali ke menu...");
-            Console.ReadLine();
-        }
     }
 }

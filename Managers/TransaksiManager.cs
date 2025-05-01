@@ -28,28 +28,21 @@ namespace AplikasiInventarisToko.Managers
 
             try
             {
+                // Update langsung stok-nya
+                barang.Stok += jumlah;
+
+                // Catat transaksi
                 var transaksi = new Transaksi(barangId, "MASUK", jumlah, keterangan);
                 _daftarTransaksi.Add(transaksi);
 
-                var barangBaru = new Barang(
-                    barang.Nama,
-                    barang.Kategori,
-                    barang.Stok + jumlah,
-                    barang.HargaBeli,
-                    barang.HargaJual,
-                    barang.Supplier)
-                {
-                    Id = barang.Id,
-                    TanggalMasuk = barang.TanggalMasuk
-                };
-
-                return _barangManager.EditBarang(barangId, barangBaru);
+                return true;
             }
             catch (Exception ex)
             {
                 throw new Exception($"Gagal melakukan transaksi masuk: {ex.Message}");
             }
         }
+
 
         public bool TransaksiKeluar(string barangId, int jumlah, string keterangan)
         {
@@ -65,28 +58,21 @@ namespace AplikasiInventarisToko.Managers
 
             try
             {
+                // Kurangi stok
+                barang.Stok -= jumlah;
+
+                // Catat transaksi
                 var transaksi = new Transaksi(barangId, "KELUAR", jumlah, keterangan);
                 _daftarTransaksi.Add(transaksi);
 
-                var barangBaru = new Barang(
-                    barang.Nama,
-                    barang.Kategori,
-                    barang.Stok - jumlah,
-                    barang.HargaBeli,
-                    barang.HargaJual,
-                    barang.Supplier)
-                {
-                    Id = barang.Id,
-                    TanggalMasuk = barang.TanggalMasuk
-                };
-
-                return _barangManager.EditBarang(barangId, barangBaru);
+                return true;
             }
             catch (Exception ex)
             {
                 throw new Exception($"Gagal melakukan transaksi keluar: {ex.Message}");
             }
         }
+
 
         public List<Transaksi> GetSemuaTransaksi()
         {
