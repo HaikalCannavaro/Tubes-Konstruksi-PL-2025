@@ -44,6 +44,13 @@ namespace AplikasiInventarisToko
                     case "5":
                         ModulBarang.LihatSemuaBarang();
                         break;
+                    case "8":
+                        ModulBarang.LihatLaporanInventaris();
+                        break;
+                    case "9":
+                        ModulBarang.ExportDataKeFile();
+                        break;
+
                     case "0":
                         Console.WriteLine("\nTerima kasih telah menggunakan aplikasi ini.");
                         isRunning = false;
