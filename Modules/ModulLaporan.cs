@@ -32,13 +32,15 @@ namespace AplikasiInventarisToko.Managers
                     int stokAwal = StokHelper.HitungStokAwal(barang, transaksiManager);
                     double persentaseStok = StokHelper.HitungPersentaseStok(barang, stokAwal);
                     string status = StokHelper.TentukanStatus(barang, persentaseStok, config);
+                    int lamaDiGudang = (int)(DateTime.Now - barang.TanggalMasuk).TotalDays;
 
-                    Console.WriteLine($"ID           : {barang.Id}");
-                    Console.WriteLine($"Nama         : {barang.Nama}");
-                    Console.WriteLine($"Tanggal Masuk: {barang.TanggalMasuk:dd-MM-yyyy}");
-                    Console.WriteLine($"Stok         : {barang.Stok}/{stokAwal} ({persentaseStok:N0}%)");
-                    Console.WriteLine($"Harga Beli   : {StokHelper.FormatCurrency(barang.HargaBeli, config)}");
-                    Console.WriteLine($"Status       : {status}");
+                    Console.WriteLine($"ID             : {barang.Id}");
+                    Console.WriteLine($"Nama           : {barang.Nama}");
+                    Console.WriteLine($"Tanggal Masuk  : {barang.TanggalMasuk:dd-MM-yyyy}");
+                    Console.WriteLine($"Lama di Gudang : {lamaDiGudang} hari");
+                    Console.WriteLine($"Stok           : {barang.Stok}/{stokAwal} ({persentaseStok:N0}%)");
+                    Console.WriteLine($"Harga Beli     : {StokHelper.FormatCurrency(barang.HargaBeli, config)}");
+                    Console.WriteLine($"Status         : {status}");
                     Console.WriteLine(new string('-', 40));
                 }
             }

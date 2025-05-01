@@ -28,10 +28,10 @@ namespace AplikasiInventarisToko.Managers
 
             try
             {
-                // Update langsung stok-nya
                 barang.Stok += jumlah;
 
-                // Catat transaksi
+                barang.StokAwal += jumlah;
+
                 var transaksi = new Transaksi(barangId, "MASUK", jumlah, keterangan);
                 _daftarTransaksi.Add(transaksi);
 
@@ -58,10 +58,8 @@ namespace AplikasiInventarisToko.Managers
 
             try
             {
-                // Kurangi stok
                 barang.Stok -= jumlah;
 
-                // Catat transaksi
                 var transaksi = new Transaksi(barangId, "KELUAR", jumlah, keterangan);
                 _daftarTransaksi.Add(transaksi);
 
