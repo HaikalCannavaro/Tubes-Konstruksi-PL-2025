@@ -2,7 +2,7 @@
 using AplikasiInventarisToko.Modules;
 using AplikasiInventarisToko.Models;
 
-namespace AplikasiInventarisToko.Api.Controllers
+namespace AplikasiInventarisToko.API
 {
     [ApiController]
     [Route("api/[controller]")]

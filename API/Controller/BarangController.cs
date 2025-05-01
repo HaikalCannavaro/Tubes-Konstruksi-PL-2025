@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using AplikasiInventarisToko.Models;
 using AplikasiInventarisToko.Managers;
 
-namespace AplikasiInventarisToko.Api.Controllers
+namespace AplikasiInventarisToko.API
 {
     [ApiController]
     [Route("api/[controller]")]
