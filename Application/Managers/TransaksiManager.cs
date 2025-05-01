@@ -11,7 +11,6 @@ namespace AplikasiInventarisToko.Managers
         private List<Transaksi> _daftarTransaksi;
         private BarangManager<Barang> _barangManager;
 
-        // Enum State untuk Automata
         private enum TransaksiState
         {
             Idle,
@@ -34,22 +33,18 @@ namespace AplikasiInventarisToko.Managers
 
             try
             {
-                // State 1: Validasi input
                 Contract.Requires<ArgumentException>(!string.IsNullOrEmpty(barangId), "ID barang tidak boleh kosong");
                 Contract.Requires<ArgumentException>(jumlah > 0, "Jumlah harus lebih dari 0");
 
-                // State 2: Cari barang
                 barang = _barangManager.GetBarangById(barangId);
                 if (barang == null)
                     throw new ArgumentException("Barang tidak ditemukan");
                 state = TransaksiState.BarangDitemukan;
 
-                // State 3: Proses transaksi
                 barang.Stok += jumlah;
                 barang.StokAwal += jumlah;
                 state = TransaksiState.StokValid;
 
-                // State 4: Simpan transaksi
                 var transaksi = new Transaksi(barangId, "MASUK", jumlah, keterangan);
                 _daftarTransaksi.Add(transaksi);
                 state = TransaksiState.TransaksiBerhasil;
@@ -58,7 +53,6 @@ namespace AplikasiInventarisToko.Managers
             }
             catch (Exception ex)
             {
-                // Rollback jika gagal di state tertentu
                 if (state == TransaksiState.StokValid && barang != null)
                 {
                     barang.Stok -= jumlah;
@@ -76,27 +70,22 @@ namespace AplikasiInventarisToko.Managers
 
             try
             {
-                // State 1: Validasi input
                 Contract.Requires<ArgumentException>(!string.IsNullOrEmpty(barangId), "ID barang tidak boleh kosong");
                 Contract.Requires<ArgumentException>(jumlah > 0, "Jumlah harus lebih dari 0");
                 state = TransaksiState.BarangDitemukan;
 
-                // State 2: Cari barang
                 barang = _barangManager.GetBarangById(barangId);
                 if (barang == null)
                     throw new ArgumentException("Barang tidak ditemukan");
                 state = TransaksiState.BarangDitemukan;
 
-                // State 3: Cek stok
                 if (barang.Stok < jumlah)
                     throw new InvalidOperationException("Stok tidak cukup");
                 state = TransaksiState.StokValid;
 
-                // State 4: Proses transaksi
                 barang.Stok -= jumlah;
                 state = TransaksiState.StokValid;
 
-                // State 5: Simpan transaksi
                 var transaksi = new Transaksi(barangId, "KELUAR", jumlah, keterangan);
                 _daftarTransaksi.Add(transaksi);
                 state = TransaksiState.TransaksiBerhasil;
@@ -105,7 +94,6 @@ namespace AplikasiInventarisToko.Managers
             }
             catch (Exception ex)
             {
-                // Rollback jika gagal setelah mengurangi stok
                 if (state == TransaksiState.StokValid && barang != null)
                 {
                     barang.Stok += jumlah;
@@ -115,7 +103,6 @@ namespace AplikasiInventarisToko.Managers
             }
         }
 
-        // Method lainnya tetap sama...
         public List<Transaksi> GetSemuaTransaksi() => _daftarTransaksi.OrderByDescending(t => t.Tanggal).ToList();
 
         public List<Transaksi> GetTransaksiByBarangId(string barangId) =>
