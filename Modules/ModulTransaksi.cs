@@ -147,8 +147,8 @@ namespace AplikasiInventarisToko.Modules
             }
             else
             {
-                Console.WriteLine("{0,-10} {1,-10} {2,-20} {3,-8} {4,-25} {5,-30}",
-                    "ID", "Jenis", "Barang ID", "Jumlah", "Tanggal", "Keterangan");
+                Console.WriteLine("{0,-10} {1,-10} {2,-10} {3,-10} {4,-8} {5,-25} {6,-30}",
+                    "ID", "Jenis", "ID", "Barang","Jumlah", "Tanggal", "Keterangan");
                 Console.WriteLine(new string('-', 95));
 
                 foreach (var t in transaksi)
@@ -156,10 +156,11 @@ namespace AplikasiInventarisToko.Modules
                     var barang = ModulBarang.Manager.GetBarangById(t.BarangId);
                     string namaBarang = barang != null ? barang.Nama : "Unknown";
 
-                    Console.WriteLine("{0,-10} {1,-10} {2,-20} {3,-8} {4,-25} {5,-30}",
+                    Console.WriteLine("{0,-10} {1,-10} {2,-10} {3,-10} {4,-8} {5,-25} {6,-30}",
                         t.Id,
                         t.Jenis,
-                        $"{t.BarangId} ({namaBarang})",
+                        t.BarangId ,
+                        namaBarang,
                         t.Jumlah,
                         t.Tanggal,
                         t.Keterangan);
