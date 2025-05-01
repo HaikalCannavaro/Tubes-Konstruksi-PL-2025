@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using AplikasiInventarisToko.Models;
 using AplikasiInventarisToko.Utils;
 using AplikasiInventarisToko.Managers;
@@ -9,7 +10,7 @@ namespace AplikasiInventarisToko
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             bool isRunning = true;
 
@@ -38,34 +39,34 @@ namespace AplikasiInventarisToko
                 switch (input)
                 {
                     case "1":
-                        ModulBarang.TambahBarangBaru();
+                        await ModulBarang.TambahBarangBaru();
                         break;
                     case "2":
-                        ModulBarang.EditBarang();
+                        await ModulBarang.EditBarang();
                         break;
                     case "3":
-                        ModulBarang.HapusBarang();
+                        await ModulBarang.HapusBarang();
                         break;
                     case "4":
-                        ModulBarang.CariBarang();
+                        await ModulBarang.CariBarang();
                         break;
                     case "5":
-                        ModulBarang.LihatSemuaBarang();
+                        await ModulBarang.LihatSemuaBarang();
                         break;
                     case "6":
-                        ModulTransaksi.TransaksiBarangMasuk();
+                        await ModulTransaksi.TransaksiBarangMasuk();
                         break;
                     case "7":
-                        ModulTransaksi.TransaksiBarangKeluar();
+                        await ModulTransaksi.TransaksiBarangKeluar();
                         break;
                     case "8":
-                        ModulTransaksi.LihatRiwayatTransaksi();
+                        await ModulTransaksi.LihatRiwayatTransaksi();
                         break;
                     case "9":
-                        ModulLaporan.TampilkanLaporanInventaris();
+                        await ModulLaporan.TampilkanLaporanInventaris();
                         break;
                     case "10":
-                        ModulLaporan.ExportDataInventaris();
+                        await ModulLaporan.ExportDataInventaris();
                         break;
                     case "0":
                         Console.WriteLine("\nTerima kasih telah menggunakan aplikasi ini.");

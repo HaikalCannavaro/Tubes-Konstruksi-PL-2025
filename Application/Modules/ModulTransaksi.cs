@@ -1,47 +1,61 @@
-﻿using AplikasiInventarisToko.Managers;
-using AplikasiInventarisToko.Models;
+﻿using AplikasiInventarisToko.Models;
 using AplikasiInventarisToko.Utils;
-using System;
+using System.Net.Http.Json;
 
 namespace AplikasiInventarisToko.Modules
 {
     public static class ModulTransaksi
     {
-        private static TransaksiManager _transaksiManager = new TransaksiManager(ModulBarang.Manager);
+        private static readonly string baseUrl = "https://localhost:7123";
 
-        public static void TransaksiBarangMasuk()
+        private static HttpClient GetHttpClient()
+        {
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            };
+
+            var client = new HttpClient(handler);
+            client.BaseAddress = new Uri(baseUrl);
+            return client;
+        }
+
+        public static async Task TransaksiBarangMasuk()
         {
             Console.Clear();
             Console.WriteLine("=== TRANSAKSI BARANG MASUK ===");
 
+            using var client = GetHttpClient();
+
             try
             {
-                var daftarBarang = ModulBarang.Manager.GetSemuaBarang();
+                var daftarBarang = await client.GetFromJsonAsync<List<Barang>>("/api/Barang");
                 var config = KonfigurasiAplikasi.Load();
-                if (daftarBarang.Count == 0)
-                {
-                    Console.WriteLine("Tidak ada barang tersedia.");
+
+                if(daftarBarang == null || daftarBarang.Count == 0)
+{
+                    Console.WriteLine("\nBelum ada barang yang terdata.");
+                    Console.WriteLine("Silakan tambahkan barang terlebih dahulu sebelum melakukan transaksi.");
+                    Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
+                    Console.ReadKey();
+                    return;
                 }
-                else
+
+
+                Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
+                    "ID", "Nama", "Kategori", "Stok", "Harga Beli", "Harga Jual", "Supplier");
+                Console.WriteLine(new string('-', 95));
+                foreach (var barang in daftarBarang)
                 {
                     Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
-                        "ID", "Nama", "Kategori", "Stok", "Harga Beli", "Harga Jual", "Supplier");
-                    Console.WriteLine(new string('-', 95));
-
-                    foreach (var barang in daftarBarang)
-                    {
-                        Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12:C} {5,-12:C} {6,-15}",
-                            barang.Id,
-                            barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
-                            barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
-                            barang.Stok,
-                            StokHelper.FormatCurrency(barang.HargaBeli, config),
-                            StokHelper.FormatCurrency(barang.HargaJual, config),
-                            barang.Supplier.Length > 12 ? barang.Supplier.Substring(0, 12) + "..." : barang.Supplier);
-                    }
+                        barang.Id,
+                        barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
+                        barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
+                        barang.Stok,
+                        StokHelper.FormatCurrency(barang.HargaBeli, config),
+                        StokHelper.FormatCurrency(barang.HargaJual, config),
+                        barang.Supplier.Length > 12 ? barang.Supplier.Substring(0, 12) + "..." : barang.Supplier);
                 }
-
-                
 
                 Console.Write("\nMasukkan ID barang: ");
                 string id = Console.ReadLine();
@@ -52,57 +66,70 @@ namespace AplikasiInventarisToko.Modules
                 Console.Write("Keterangan (opsional): ");
                 string keterangan = Console.ReadLine();
 
-                bool sukses = _transaksiManager.TransaksiMasuk(id, jumlah, keterangan);
+                var transaksi = new Transaksi
+                {
+                    BarangId = id,
+                    Jumlah = jumlah,
+                    Jenis = "Masuk",
+                    Keterangan = keterangan
+                };
 
-                if (sukses)
+                var response = await client.PostAsJsonAsync("/api/Transaksi/masuk", transaksi);
+
+                if (response.IsSuccessStatusCode)
                 {
                     Console.WriteLine("\nTransaksi barang masuk berhasil!");
-                    var barang = ModulBarang.Manager.GetBarangById(id);
-                    Console.WriteLine($"Stok {barang.Nama} sekarang: {barang.Stok}");
                 }
                 else
                 {
-                    Console.WriteLine("\nGagal melakukan transaksi barang masuk.");
+                    var msg = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Gagal: {msg}");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"\nError: {ex.Message}");
             }
+
             Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
             Console.ReadKey();
-
         }
 
-        public static void TransaksiBarangKeluar()
+        public static async Task TransaksiBarangKeluar()
         {
             Console.Clear();
             Console.WriteLine("=== TRANSAKSI BARANG KELUAR ===");
 
+            using var client = GetHttpClient();
+
             try
             {
-                var daftarBarang = ModulBarang.Manager.GetSemuaBarang();
-                if (daftarBarang.Count == 0)
+                var daftarBarang = await client.GetFromJsonAsync<List<Barang>>("/api/Barang");
+                var config = KonfigurasiAplikasi.Load();
+
+                if (daftarBarang == null || daftarBarang.Count == 0)
                 {
-                    Console.WriteLine("Tidak ada barang tersedia.");
+                    Console.WriteLine("\nBelum ada barang yang terdata.");
+                    Console.WriteLine("Silakan tambahkan barang terlebih dahulu sebelum melakukan transaksi.");
+                    Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
+                    Console.ReadKey(); 
+                    return;
                 }
-                else
+
+
+                Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
+                    "ID", "Nama", "Kategori", "Stok", "Harga Beli", "Harga Jual", "Supplier");
+                Console.WriteLine(new string('-', 95));
+                foreach (var barang in daftarBarang)
                 {
                     Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
-                        "ID", "Nama", "Kategori", "Stok", "Harga Beli", "Harga Jual", "Supplier");
-                    Console.WriteLine(new string('-', 95));
-
-                    foreach (var barang in daftarBarang)
-                    {
-                        Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12:C} {5,-12:C} {6,-15}",
-                            barang.Id,
-                            barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
-                            barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
-                            barang.Stok,
-                            barang.HargaBeli,
-                            barang.HargaJual,
-                            barang.Supplier.Length > 12 ? barang.Supplier.Substring(0, 12) + "..." : barang.Supplier);
-                    }
+                        barang.Id,
+                        barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
+                        barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
+                        barang.Stok,
+                        StokHelper.FormatCurrency(barang.HargaBeli, config),
+                        StokHelper.FormatCurrency(barang.HargaJual, config),
+                        barang.Supplier.Length > 12 ? barang.Supplier.Substring(0, 12) + "..." : barang.Supplier);
                 }
 
                 Console.Write("\nMasukkan ID barang: ");
@@ -114,17 +141,24 @@ namespace AplikasiInventarisToko.Modules
                 Console.Write("Keterangan (opsional): ");
                 string keterangan = Console.ReadLine();
 
-                bool sukses = _transaksiManager.TransaksiKeluar(id, jumlah, keterangan);
+                var transaksi = new Transaksi
+                {
+                    BarangId = id,
+                    Jumlah = jumlah,
+                    Jenis = "Keluar",
+                    Keterangan = keterangan
+                };
 
-                if (sukses)
+                var response = await client.PostAsJsonAsync("/api/Transaksi/keluar", transaksi);
+
+                if (response.IsSuccessStatusCode)
                 {
                     Console.WriteLine("\nTransaksi barang keluar berhasil!");
-                    var barang = ModulBarang.Manager.GetBarangById(id);
-                    Console.WriteLine($"Stok {barang.Nama} sekarang: {barang.Stok}");
                 }
                 else
                 {
-                    Console.WriteLine("\nGagal melakukan transaksi barang keluar.");
+                    var msg = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Gagal: {msg}");
                 }
             }
             catch (Exception ex)
@@ -132,53 +166,65 @@ namespace AplikasiInventarisToko.Modules
                 Console.WriteLine($"\nError: {ex.Message}");
             }
 
-            Console.WriteLine("\nTekan sembarang tombol untuk kembali ke menu utama...");
+            Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
             Console.ReadKey();
         }
 
-        public static void LihatRiwayatTransaksi()
+        public static async Task LihatRiwayatTransaksi()
         {
             Console.Clear();
             Console.WriteLine("=== RIWAYAT TRANSAKSI ===");
 
-            var transaksi = _transaksiManager.GetSemuaTransaksi();
-            if (transaksi.Count == 0)
+            var handler = new HttpClientHandler
             {
-                Console.WriteLine("Belum ada transaksi.");
-            }
-            else
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            };
+
+            using var client = new HttpClient(handler);
+            client.BaseAddress = new Uri("https://localhost:7123");
+
+            try
             {
-                Console.WriteLine("{0,-10} {1,-10} {2,-10} {3,-10} {4,-8} {5,-25} {6,-30}",
-                    "ID", "Jenis", "ID", "Barang","Jumlah", "Tanggal", "Keterangan");
-                Console.WriteLine(new string('-', 95));
+                var response = await client.GetAsync("/api/Transaksi");
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Gagal mengambil data transaksi.");
+                    Console.ReadKey();
+                    return;
+                }
+
+                var transaksi = await response.Content.ReadFromJsonAsync<List<Transaksi>>();
+                if (transaksi == null || transaksi.Count == 0)
+                {
+                    Console.WriteLine("Belum ada transaksi.");
+                    Console.ReadKey();
+                    return;
+                }
+
+                var barangResponse = await client.GetAsync("/api/Barang");
+                var daftarBarang = await barangResponse.Content.ReadFromJsonAsync<List<Barang>>() ?? new();
+                var barangDict = daftarBarang.ToDictionary(b => b.Id, b => b.Nama);
+
+                Console.WriteLine("{0,-10} {1,-10} {2,-10} {3,-20} {4,-8} {5,-25} {6,-30}",
+                    "ID", "Jenis", "ID", "Barang", "Jumlah", "Tanggal", "Keterangan");
+                Console.WriteLine(new string('-', 110));
 
                 foreach (var t in transaksi)
                 {
-                    var barang = ModulBarang.Manager.GetBarangById(t.BarangId);
-                    string namaBarang = barang != null ? barang.Nama : "Unknown";
+                    string nama = barangDict.ContainsKey(t.BarangId) ? barangDict[t.BarangId] : "Tidak diketahui";
 
-                    Console.WriteLine("{0,-10} {1,-10} {2,-10} {3,-10} {4,-8} {5,-25} {6,-30}",
-                        t.Id,
-                        t.Jenis,
-                        t.BarangId ,
-                        namaBarang,
-                        t.Jumlah,
-                        t.Tanggal,
-                        t.Keterangan);
+                    Console.WriteLine("{0,-10} {1,-10} {2,-10} {3,-20} {4,-8} {5,-25} {6,-30}",
+                        t.Id, t.Jenis, t.BarangId, nama, t.Jumlah, t.Tanggal.ToString("dd-MM-yyyy HH:mm"), t.Keterangan);
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\nTerjadi kesalahan: {ex.Message}");
             }
 
             Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
             Console.ReadKey();
         }
-        public static bool CreateTransaksiMasuk(Transaksi t) =>
-            _transaksiManager.TransaksiMasuk(t.BarangId, t.Jumlah, t.Keterangan);
-
-        public static bool CreateTransaksiKeluar(Transaksi t) =>
-            _transaksiManager.TransaksiKeluar(t.BarangId, t.Jumlah, t.Keterangan);
-
-        public static List<Transaksi> GetSemuaTransaksi() =>
-            _transaksiManager.GetSemuaTransaksi();
 
     }
 }

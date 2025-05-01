@@ -1,6 +1,7 @@
-﻿using AplikasiInventarisToko.Models;
+using AplikasiInventarisToko.Models;
 using AplikasiInventarisToko.Utils;
 using System;
+using System.Net.Http.Json;
 
 namespace AplikasiInventarisToko.Managers
 {
@@ -9,7 +10,7 @@ namespace AplikasiInventarisToko.Managers
         private static BarangManager<Barang> _barangManager = new BarangManager<Barang>();
         public static BarangManager<Barang> Manager => _barangManager;
 
-        public static void TambahBarangBaru()
+        public static async Task TambahBarangBaru()
         {
             Console.Clear();
             Console.WriteLine("=== TAMBAH BARANG BARU ===");
@@ -34,22 +35,29 @@ namespace AplikasiInventarisToko.Managers
                 Console.Write("Supplier: ");
                 string supplier = Console.ReadLine();
 
-                Barang barangBaru = new Barang(nama, kategori, stok, hargaBeli, hargaJual, supplier)
+                var barang = new Barang(nama, kategori, stok, hargaBeli, hargaJual, supplier)
                 {
                     StokAwal = stok
                 };
 
-
-                bool sukses = Manager.TambahBarang(barangBaru);
-
-                if (sukses)
+                var handler = new HttpClientHandler
                 {
-                    Console.WriteLine("\nBarang berhasil ditambahkan!");
-                    Console.WriteLine($"ID Barang: {barangBaru.Id}");
+                    ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+                };
+
+                using var client = new HttpClient(handler);
+                client.BaseAddress = new Uri("https://localhost:7123");
+
+
+                var response = await client.PostAsJsonAsync("/api/Barang", barang);
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("\nBarang berhasil ditambahkan ke API!");
                 }
                 else
                 {
-                    Console.WriteLine("\nGagal menambahkan barang.");
+                    var msg = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"\nGagal menambahkan barang: {msg}");
                 }
             }
             catch (Exception ex)
@@ -61,88 +69,124 @@ namespace AplikasiInventarisToko.Managers
             Console.ReadKey();
         }
 
-        // Implementasi fitur Cari Barang
-        public static void CariBarang()
+
+        public static async Task CariBarang()
         {
             Console.Clear();
             Console.WriteLine("=== CARI BARANG ===");
 
-            var daftarBarang = Manager.GetSemuaBarang();
+            Console.Write("Masukkan kriteria (id/nama/kategori/supplier): ");
+            string kriteria = Console.ReadLine()?.ToLower();
 
-            if (daftarBarang.Count == 0)
+            Console.Write("Masukkan nilai pencarian: ");
+            string nilai = Console.ReadLine();
+
+            var handler = new HttpClientHandler
             {
-                Console.WriteLine("Tidak ada barang tersedia.");
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            };
+
+            using var client = new HttpClient(handler);
+            client.BaseAddress = new Uri("https://localhost:7123");
+
+            try
+            {
+                var response = await client.GetAsync($"/api/Barang/search?kriteria={kriteria}&nilai={nilai}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var hasil = await response.Content.ReadFromJsonAsync<List<Barang>>();
+                    var config = KonfigurasiAplikasi.Load();
+
+                    if (hasil == null || hasil.Count == 0)
+                    {
+                        Console.WriteLine("Barang tidak ditemukan.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
+                            "ID", "Nama", "Kategori", "Stok", "Harga Beli", "Harga Jual", "Supplier");
+                        Console.WriteLine(new string('-', 95));
+
+                        foreach (var barang in hasil)
+                        {
+                            Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
+                                barang.Id,
+                                barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
+                                barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
+                                barang.Stok,
+                                StokHelper.FormatCurrency(barang.HargaBeli, config),
+                                StokHelper.FormatCurrency(barang.HargaJual, config),
+                                barang.Supplier.Length > 12 ? barang.Supplier.Substring(0, 12) + "..." : barang.Supplier);
+                        }
+                    }
+                }
+                else
+                {
+                    var msg = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Gagal mencari barang: {msg}");
+                }
             }
-            else
+            catch (Exception ex)
             {
+                Console.WriteLine($"Terjadi kesalahan: {ex.Message}");
+            }
+
+            Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
+            Console.ReadKey();
+        }
+
+
+
+        public static async Task EditBarang()
+        {
+            Console.Clear();
+            Console.WriteLine("=== EDIT BARANG ===");
+
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            };
+
+            using var client = new HttpClient(handler);
+            client.BaseAddress = new Uri("https://localhost:7123");
+
+            try
+            {
+                var response = await client.GetAsync("/api/Barang");
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Gagal mengambil daftar barang.");
+                    Console.ReadKey();
+                    return;
+                }
+
+                var daftarBarang = await response.Content.ReadFromJsonAsync<List<Barang>>();
+                if (daftarBarang == null || daftarBarang.Count == 0)
+                {
+                    Console.WriteLine("Tidak ada barang untuk diedit.");
+                    Console.ReadKey();
+                    return;
+                }
+
                 foreach (var barang in daftarBarang)
                 {
                     Console.WriteLine($"[{barang.Id}] {barang.Nama} - Stok: {barang.Stok}");
                 }
 
-                Console.Write("\nMasukkan ID barang yang dicari: ");
+                Console.Write("\nMasukkan ID barang yang ingin diedit: ");
                 string id = Console.ReadLine();
 
-                var item = Manager.GetBarangById(id);
-
-                if (item != null)
-                {
-                    Console.WriteLine("\nDetail Barang:");
-                    Console.WriteLine($"ID: {item.Id}");
-                    Console.WriteLine($"Nama: {item.Nama}");
-                    Console.WriteLine($"Kategori: {item.Kategori}");
-                    Console.WriteLine($"Stok: {item.Stok}");
-                    Console.WriteLine($"Harga Beli: {item.HargaBeli:C}");
-                    Console.WriteLine($"Harga Jual: {item.HargaJual:C}");
-                    Console.WriteLine($"Supplier: {item.Supplier}");
-                    Console.WriteLine($"Tanggal Masuk: {item.TanggalMasuk}");
-                }
-                else
+                var getBarang = await client.GetAsync($"/api/Barang/{id}");
+                if (!getBarang.IsSuccessStatusCode)
                 {
                     Console.WriteLine("Barang tidak ditemukan.");
+                    Console.ReadKey();
+                    return;
                 }
-            }
 
-            Console.WriteLine("\nTekan sembarang tombol untuk kembali ke menu utama...");
-            Console.ReadKey();
-        }
+                var barangLama = await getBarang.Content.ReadFromJsonAsync<Barang>();
 
-
-        public static void EditBarang()
-        {
-            Console.Clear();
-            Console.WriteLine("=== EDIT BARANG ===");
-
-            var daftarBarang = Manager.GetSemuaBarang();
-
-            if (daftarBarang.Count == 0)
-            {
-                Console.WriteLine("Tidak ada barang untuk diedit.");
-                Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
-                Console.ReadKey();
-                return;
-            }
-
-            foreach (var barang in daftarBarang)
-            {
-                Console.WriteLine($"[{barang.Id}] {barang.Nama} - Stok: {barang.Stok}");
-            }
-
-            Console.Write("\nMasukkan ID barang yang ingin diedit: ");
-            string id = Console.ReadLine();
-
-            var barangLama = Manager.GetBarangById(id);
-
-            if (barangLama == null)
-            {
-                Console.WriteLine("Barang tidak ditemukan.");
-                Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
-                Console.ReadKey();
-                return;
-            }
-
-            try
-            {
                 Console.WriteLine($"\nEdit Barang: {barangLama.Nama}");
 
                 Console.Write($"Nama Barang [{barangLama.Nama}]: ");
@@ -169,16 +213,23 @@ namespace AplikasiInventarisToko.Managers
                 string supplier = Console.ReadLine();
                 supplier = string.IsNullOrEmpty(supplier) ? barangLama.Supplier : supplier;
 
-                Barang barangBaru = new Barang(nama, kategori, stok, hargaBeli, hargaJual, supplier)
+                var barangBaru = new Barang(nama, kategori, stok, hargaBeli, hargaJual, supplier)
                 {
                     Id = barangLama.Id,
                     TanggalMasuk = barangLama.TanggalMasuk,
                     StokAwal = stok
                 };
 
-                bool sukses = Manager.EditBarang(id, barangBaru);
-
-                Console.WriteLine(sukses ? "\nBarang berhasil diperbarui!" : "\nGagal memperbarui barang.");
+                var put = await client.PutAsJsonAsync($"/api/Barang/{id}", barangBaru);
+                if (put.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("\nBarang berhasil diperbarui!");
+                }
+                else
+                {
+                    var err = await put.Content.ReadAsStringAsync();
+                    Console.WriteLine($"\nGagal memperbarui barang: {err}");
+                }
             }
             catch (Exception ex)
             {
@@ -189,36 +240,61 @@ namespace AplikasiInventarisToko.Managers
             Console.ReadKey();
         }
 
-        public static void LihatSemuaBarang()
+
+
+        public static async Task LihatSemuaBarang()
         {
             Console.Clear();
             Console.WriteLine("=== DAFTAR SEMUA BARANG ===");
 
-            var daftarBarang = Manager.GetSemuaBarang();
-            var config = KonfigurasiAplikasi.Load();
-
-
-            if (daftarBarang.Count == 0)
+            var handler = new HttpClientHandler
             {
-                Console.WriteLine("Tidak ada barang tersedia.");
-            }
-            else
-            {
-                Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
-                    "ID", "Nama", "Kategori", "Stok", "Harga Beli", "Harga Jual", "Supplier");
-                Console.WriteLine(new string('-', 95));
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            };
 
-                foreach (var barang in daftarBarang)
+            using var client = new HttpClient(handler);
+            client.BaseAddress = new Uri("https://localhost:7123");
+
+            try
+            {
+                var response = await client.GetAsync("/api/Barang");
+
+                if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12:C} {5,-12:C} {6,-15}",
-                        barang.Id,
-                        barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
-                        barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
-                        barang.Stok,
-                        StokHelper.FormatCurrency(barang.HargaBeli, config),
-                        StokHelper.FormatCurrency(barang.HargaJual, config),
-                        barang.Supplier.Length > 12 ? barang.Supplier.Substring(0, 12) + "..." : barang.Supplier);
+                    var daftarBarang = await response.Content.ReadFromJsonAsync<List<Barang>>();
+                    var config = KonfigurasiAplikasi.Load();
+
+                    if (daftarBarang == null || daftarBarang.Count == 0)
+                    {
+                        Console.WriteLine("Tidak ada barang tersedia.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
+                            "ID", "Nama", "Kategori", "Stok", "Harga Beli", "Harga Jual", "Supplier");
+                        Console.WriteLine(new string('-', 95));
+
+                        foreach (var barang in daftarBarang)
+                        {
+                            Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
+                                barang.Id,
+                                barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
+                                barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
+                                barang.Stok,
+                                StokHelper.FormatCurrency(barang.HargaBeli, config),
+                                StokHelper.FormatCurrency(barang.HargaJual, config),
+                                barang.Supplier.Length > 12 ? barang.Supplier.Substring(0, 12) + "..." : barang.Supplier);
+                        }
+                    }
                 }
+                else
+                {
+                    Console.WriteLine("Gagal mengambil data barang dari API.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Terjadi kesalahan: {ex.Message}");
             }
 
             Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
@@ -243,7 +319,7 @@ namespace AplikasiInventarisToko.Managers
             public bool HasilHapus { get; set; }
         }
 
-        public static void HapusBarang()
+        public static async Task HapusBarang()
         {
             Console.Clear();
             Console.WriteLine("=== HAPUS BARANG ===");
@@ -251,24 +327,25 @@ namespace AplikasiInventarisToko.Managers
             var context = new HapusBarangContext
             {
                 CurrentState = HapusBarangState.ListBarang,
-                DaftarBarang = Manager.GetSemuaBarang()
+                DaftarBarang = new List<Barang>()
             };
+
 
             while (context.CurrentState != HapusBarangState.Selesai)
             {
                 switch (context.CurrentState)
                 {
                     case HapusBarangState.ListBarang:
-                        HandleListBarangState(context);
+                        await HandleListBarangState(context);
                         break;
                     case HapusBarangState.InputId:
-                        HandleInputIdState(context);
+                        await HandleInputIdState(context);
                         break;
                     case HapusBarangState.Konfirmasi:
-                        HandleKonfirmasiState(context);
+                        await HandleKonfirmasiState(context);
                         break;
                     case HapusBarangState.ProsesHapus:
-                        HandleProsesHapusState(context);
+                        await HandleProsesHapusState(context);
                         break;
                 }
             }
@@ -281,32 +358,58 @@ namespace AplikasiInventarisToko.Managers
             Console.ReadKey();
         }
 
-        private static void HandleListBarangState(HapusBarangContext context)
+        private static async Task HandleListBarangState(HapusBarangContext context)
         {
-            if (context.DaftarBarang.Count == 0)
+            var handler = new HttpClientHandler
             {
-                Console.WriteLine("Tidak ada barang untuk dihapus.");
-                context.CurrentState = HapusBarangState.Selesai;
-                return;
-            }
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            };
 
-            Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8}",
-                "ID", "Nama", "Kategori", "Stok");
-            Console.WriteLine(new string('-', 55));
+            using var client = new HttpClient(handler);
+            client.BaseAddress = new Uri("https://localhost:7123");
 
-            foreach (var barang in context.DaftarBarang)
+            try
             {
+                var response = await client.GetAsync("/api/Barang");
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Gagal mengambil daftar barang.");
+                    context.CurrentState = HapusBarangState.Selesai;
+                    return;
+                }
+
+                context.DaftarBarang = await response.Content.ReadFromJsonAsync<List<Barang>>();
+                if (context.DaftarBarang == null || context.DaftarBarang.Count == 0)
+                {
+                    Console.WriteLine("Tidak ada barang untuk dihapus.");
+                    context.CurrentState = HapusBarangState.Selesai;
+                    return;
+                }
+
                 Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8}",
-                    barang.Id,
-                    barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
-                    barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
-                    barang.Stok);
-            }
+                    "ID", "Nama", "Kategori", "Stok");
+                Console.WriteLine(new string('-', 55));
 
-            context.CurrentState = HapusBarangState.InputId;
+                foreach (var barang in context.DaftarBarang)
+                {
+                    Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8}",
+                        barang.Id,
+                        barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
+                        barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
+                        barang.Stok);
+                }
+
+                context.CurrentState = HapusBarangState.InputId;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Gagal mengambil data: {ex.Message}");
+                context.CurrentState = HapusBarangState.Selesai;
+            }
         }
 
-        private static void HandleInputIdState(HapusBarangContext context)
+
+        private static async Task HandleInputIdState(HapusBarangContext context)
         {
             Console.Write("\nMasukkan ID barang yang ingin dihapus (atau 'batal' untuk kembali): ");
             string input = Console.ReadLine();
@@ -317,19 +420,36 @@ namespace AplikasiInventarisToko.Managers
                 return;
             }
 
-            var barang = context.DaftarBarang.FirstOrDefault(b => b.Id == input);
-            if (barang == null)
+            var handler = new HttpClientHandler
             {
-                Console.WriteLine("ID barang tidak ditemukan. Silakan coba lagi.");
-                return;
-            }
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            };
 
-            context.BarangTerpilih = barang;
-            context.IdBarang = input;
-            context.CurrentState = HapusBarangState.Konfirmasi;
+            using var client = new HttpClient(handler);
+            client.BaseAddress = new Uri("https://localhost:7123");
+
+            try
+            {
+                var response = await client.GetAsync($"/api/Barang/{input}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("ID barang tidak ditemukan. Silakan coba lagi.");
+                    return;
+                }
+
+                var barang = await response.Content.ReadFromJsonAsync<Barang>();
+                context.BarangTerpilih = barang;
+                context.IdBarang = input;
+                context.CurrentState = HapusBarangState.Konfirmasi;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Gagal mengambil data: {ex.Message}");
+            }
         }
 
-        private static void HandleKonfirmasiState(HapusBarangContext context)
+
+        private static Task HandleKonfirmasiState(HapusBarangContext context)
         {
             Console.WriteLine($"\nDetail Barang yang akan dihapus:");
             Console.WriteLine($"ID: {context.BarangTerpilih.Id}");
@@ -356,21 +476,35 @@ namespace AplikasiInventarisToko.Managers
                     Console.WriteLine("Input tidak valid. Silakan pilih y/n/t.");
                     break;
             }
+
+            return Task.CompletedTask;
         }
 
-        private static void HandleProsesHapusState(HapusBarangContext context)
+
+
+        private static async Task HandleProsesHapusState(HapusBarangContext context)
         {
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            };
+
+            using var client = new HttpClient(handler);
+            client.BaseAddress = new Uri("https://localhost:7123");
+
             try
             {
-                context.HasilHapus = Manager.HapusBarang(context.IdBarang);
+                var response = await client.DeleteAsync($"/api/Barang/{context.IdBarang}");
+                context.HasilHapus = response.IsSuccessStatusCode;
                 context.CurrentState = HapusBarangState.Selesai;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"\nError: {ex.Message}");
+                Console.WriteLine($"\nGagal menghapus barang: {ex.Message}");
                 context.CurrentState = HapusBarangState.Konfirmasi;
             }
         }
+
 
     }
 }
