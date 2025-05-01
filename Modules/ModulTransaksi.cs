@@ -83,13 +83,26 @@ namespace AplikasiInventarisToko.Modules
                 var daftarBarang = ModulBarang.Manager.GetSemuaBarang();
                 if (daftarBarang.Count == 0)
                 {
-                    Console.WriteLine("Tidak ada barang tersedia. Harap tambahkan barang terlebih dahulu.");
-                    Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
-                    Console.ReadKey();
-                    return;
+                    Console.WriteLine("Tidak ada barang tersedia.");
                 }
+                else
+                {
+                    Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
+                        "ID", "Nama", "Kategori", "Stok", "Harga Beli", "Harga Jual", "Supplier");
+                    Console.WriteLine(new string('-', 95));
 
-                ModulBarang.LihatSemuaBarang();
+                    foreach (var barang in daftarBarang)
+                    {
+                        Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12:C} {5,-12:C} {6,-15}",
+                            barang.Id,
+                            barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
+                            barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
+                            barang.Stok,
+                            barang.HargaBeli,
+                            barang.HargaJual,
+                            barang.Supplier.Length > 12 ? barang.Supplier.Substring(0, 12) + "..." : barang.Supplier);
+                    }
+                }
 
                 Console.Write("\nMasukkan ID barang: ");
                 string id = Console.ReadLine();
