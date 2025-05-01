@@ -223,5 +223,68 @@ namespace AplikasiInventarisToko.Managers
             Console.ReadKey();
         }
 
+        public static void HapusBarang()
+        {
+            Console.Clear();
+            Console.WriteLine("=== HAPUS BARANG ===");
+
+            var daftarBarang = Manager.GetSemuaBarang();
+
+            if (daftarBarang.Count == 0)
+            {
+                Console.WriteLine("Tidak ada barang untuk dihapus.");
+                Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
+                Console.ReadKey();
+                return;
+            }
+
+            Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8}",
+                "ID", "Nama", "Kategori", "Stok");
+            Console.WriteLine(new string('-', 55));
+
+            foreach (var barang in daftarBarang)
+            {
+                Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8}",
+                    barang.Id,
+                    barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
+                    barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
+                    barang.Stok);
+            }
+
+            Console.Write("\nMasukkan ID barang yang ingin dihapus: ");
+            string id = Console.ReadLine();
+
+            Console.Write($"\nApakah Anda yakin ingin menghapus barang dengan ID {id}? (y/n): ");
+            string konfirmasi = Console.ReadLine().ToLower();
+
+            if (konfirmasi != "y")
+            {
+                Console.WriteLine("\nPenghapusan dibatalkan.");
+                Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
+                Console.ReadKey();
+                return;
+            }
+
+            try
+            {
+                bool sukses = Manager.HapusBarang(id);
+
+                if (sukses)
+                {
+                    Console.WriteLine("\nBarang berhasil dihapus!");
+                }
+                else
+                {
+                    Console.WriteLine("\nGagal menghapus barang. ID tidak ditemukan.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\nError: {ex.Message}");
+            }
+
+            Console.WriteLine("\nTekan sembarang tombol untuk kembali ke menu utama...");
+            Console.ReadKey();
+        }
     }
 }
