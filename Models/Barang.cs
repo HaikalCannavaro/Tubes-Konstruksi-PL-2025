@@ -12,6 +12,7 @@ namespace AplikasiInventarisToko.Models
         public string Nama { get; set; }
         public string Kategori { get; set; }
         public int Stok { get; set; }
+        public int StokAwal { get; set; } 
         public decimal HargaBeli { get; set; }
         public decimal HargaJual { get; set; }
         public DateTime TanggalMasuk { get; set; }

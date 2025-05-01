@@ -34,7 +34,11 @@ namespace AplikasiInventarisToko.Managers
                 Console.Write("Supplier: ");
                 string supplier = Console.ReadLine();
 
-                Barang barangBaru = new Barang(nama, kategori, stok, hargaBeli, hargaJual, supplier);
+                Barang barangBaru = new Barang(nama, kategori, stok, hargaBeli, hargaJual, supplier)
+                {
+                    StokAwal = stok
+                };
+
 
                 bool sukses = Manager.TambahBarang(barangBaru);
 
@@ -168,7 +172,8 @@ namespace AplikasiInventarisToko.Managers
                 Barang barangBaru = new Barang(nama, kategori, stok, hargaBeli, hargaJual, supplier)
                 {
                     Id = barangLama.Id,
-                    TanggalMasuk = barangLama.TanggalMasuk
+                    TanggalMasuk = barangLama.TanggalMasuk,
+                    StokAwal = barangLama.StokAwal
                 };
 
                 bool sukses = Manager.EditBarang(id, barangBaru);
@@ -217,5 +222,6 @@ namespace AplikasiInventarisToko.Managers
             Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
             Console.ReadKey();
         }
+
     }
 }
