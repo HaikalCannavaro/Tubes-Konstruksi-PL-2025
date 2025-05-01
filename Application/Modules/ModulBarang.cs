@@ -327,8 +327,9 @@ namespace AplikasiInventarisToko.Managers
             var context = new HapusBarangContext
             {
                 CurrentState = HapusBarangState.ListBarang,
-                DaftarBarang = Manager.GetSemuaBarang()
+                DaftarBarang = new List<Barang>()
             };
+
 
             while (context.CurrentState != HapusBarangState.Selesai)
             {

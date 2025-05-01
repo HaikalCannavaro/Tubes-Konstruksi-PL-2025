@@ -32,11 +32,15 @@ namespace AplikasiInventarisToko.Modules
                 var daftarBarang = await client.GetFromJsonAsync<List<Barang>>("/api/Barang");
                 var config = KonfigurasiAplikasi.Load();
 
-                if (daftarBarang == null || daftarBarang.Count == 0)
-                {
-                    Console.WriteLine("Tidak ada barang tersedia.");
+                if(daftarBarang == null || daftarBarang.Count == 0)
+{
+                    Console.WriteLine("\nBelum ada barang yang terdata.");
+                    Console.WriteLine("Silakan tambahkan barang terlebih dahulu sebelum melakukan transaksi.");
+                    Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
+                    Console.ReadKey();
                     return;
                 }
+
 
                 Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
                     "ID", "Nama", "Kategori", "Stok", "Harga Beli", "Harga Jual", "Supplier");
@@ -105,9 +109,13 @@ namespace AplikasiInventarisToko.Modules
 
                 if (daftarBarang == null || daftarBarang.Count == 0)
                 {
-                    Console.WriteLine("Tidak ada barang tersedia.");
+                    Console.WriteLine("\nBelum ada barang yang terdata.");
+                    Console.WriteLine("Silakan tambahkan barang terlebih dahulu sebelum melakukan transaksi.");
+                    Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
+                    Console.ReadKey(); 
                     return;
                 }
+
 
                 Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
                     "ID", "Nama", "Kategori", "Stok", "Harga Beli", "Harga Jual", "Supplier");
@@ -177,7 +185,6 @@ namespace AplikasiInventarisToko.Modules
 
             try
             {
-                // Ambil data transaksi
                 var response = await client.GetAsync("/api/Transaksi");
                 if (!response.IsSuccessStatusCode)
                 {
@@ -194,20 +201,19 @@ namespace AplikasiInventarisToko.Modules
                     return;
                 }
 
-                // Ambil data barang
                 var barangResponse = await client.GetAsync("/api/Barang");
                 var daftarBarang = await barangResponse.Content.ReadFromJsonAsync<List<Barang>>() ?? new();
                 var barangDict = daftarBarang.ToDictionary(b => b.Id, b => b.Nama);
 
-                Console.WriteLine("{0,-10} {1,-10} {2,-10} {3,-10} {4,-8} {5,-25} {6,-30}",
-                    "ID", "Jenis", "BarangID", "Barang", "Jumlah", "Tanggal", "Keterangan");
+                Console.WriteLine("{0,-10} {1,-10} {2,-10} {3,-20} {4,-8} {5,-25} {6,-30}",
+                    "ID", "Jenis", "ID", "Barang", "Jumlah", "Tanggal", "Keterangan");
                 Console.WriteLine(new string('-', 110));
 
                 foreach (var t in transaksi)
                 {
                     string nama = barangDict.ContainsKey(t.BarangId) ? barangDict[t.BarangId] : "Tidak diketahui";
 
-                    Console.WriteLine("{0,-10} {1,-10} {2,-10} {3,-10} {4,-8} {5,-25} {6,-30}",
+                    Console.WriteLine("{0,-10} {1,-10} {2,-10} {3,-20} {4,-8} {5,-25} {6,-30}",
                         t.Id, t.Jenis, t.BarangId, nama, t.Jumlah, t.Tanggal.ToString("dd-MM-yyyy HH:mm"), t.Keterangan);
                 }
             }
