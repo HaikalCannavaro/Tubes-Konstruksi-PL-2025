@@ -121,95 +121,167 @@ namespace AplikasiInventarisToko.Managers
         public static async Task EditBarang()
         {
             Console.Clear();
-            Console.WriteLine("=== EDIT BARANG (API) ===");
+            Console.WriteLine("=== EDIT BARANG ===");
 
-            Console.Write("Masukkan ID Barang yang ingin diedit: ");
-            string id = Console.ReadLine();
-
-            using var client = new HttpClient();
-            var get = await client.GetAsync($"http://localhost:7123/api/Barang/{id}");
-
-            if (!get.IsSuccessStatusCode)
+            var handler = new HttpClientHandler
             {
-                Console.WriteLine("Barang tidak ditemukan.");
-                Console.ReadKey();
-                return;
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            };
+
+            using var client = new HttpClient(handler);
+            client.BaseAddress = new Uri("https://localhost:7123");
+
+            try
+            {
+                var response = await client.GetAsync("/api/Barang");
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Gagal mengambil daftar barang.");
+                    Console.ReadKey();
+                    return;
+                }
+
+                var daftarBarang = await response.Content.ReadFromJsonAsync<List<Barang>>();
+                if (daftarBarang == null || daftarBarang.Count == 0)
+                {
+                    Console.WriteLine("Tidak ada barang untuk diedit.");
+                    Console.ReadKey();
+                    return;
+                }
+
+                foreach (var barang in daftarBarang)
+                {
+                    Console.WriteLine($"[{barang.Id}] {barang.Nama} - Stok: {barang.Stok}");
+                }
+
+                Console.Write("\nMasukkan ID barang yang ingin diedit: ");
+                string id = Console.ReadLine();
+
+                var getBarang = await client.GetAsync($"/api/Barang/{id}");
+                if (!getBarang.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Barang tidak ditemukan.");
+                    Console.ReadKey();
+                    return;
+                }
+
+                var barangLama = await getBarang.Content.ReadFromJsonAsync<Barang>();
+
+                Console.WriteLine($"\nEdit Barang: {barangLama.Nama}");
+
+                Console.Write($"Nama Barang [{barangLama.Nama}]: ");
+                string nama = Console.ReadLine();
+                nama = string.IsNullOrEmpty(nama) ? barangLama.Nama : nama;
+
+                Console.Write($"Kategori [{barangLama.Kategori}]: ");
+                string kategori = Console.ReadLine();
+                kategori = string.IsNullOrEmpty(kategori) ? barangLama.Kategori : kategori;
+
+                Console.Write($"Stok [{barangLama.Stok}]: ");
+                string stokInput = Console.ReadLine();
+                int stok = string.IsNullOrEmpty(stokInput) ? barangLama.Stok : ValidasiInput.ValidasiAngka(stokInput);
+
+                Console.Write($"Harga Beli [{barangLama.HargaBeli}]: ");
+                string beliInput = Console.ReadLine();
+                decimal hargaBeli = string.IsNullOrEmpty(beliInput) ? barangLama.HargaBeli : ValidasiInput.ValidasiDecimal(beliInput);
+
+                Console.Write($"Harga Jual [{barangLama.HargaJual}]: ");
+                string jualInput = Console.ReadLine();
+                decimal hargaJual = string.IsNullOrEmpty(jualInput) ? barangLama.HargaJual : ValidasiInput.ValidasiDecimal(jualInput);
+
+                Console.Write($"Supplier [{barangLama.Supplier}]: ");
+                string supplier = Console.ReadLine();
+                supplier = string.IsNullOrEmpty(supplier) ? barangLama.Supplier : supplier;
+
+                var barangBaru = new Barang(nama, kategori, stok, hargaBeli, hargaJual, supplier)
+                {
+                    Id = barangLama.Id,
+                    TanggalMasuk = barangLama.TanggalMasuk,
+                    StokAwal = stok
+                };
+
+                var put = await client.PutAsJsonAsync($"/api/Barang/{id}", barangBaru);
+                if (put.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("\nBarang berhasil diperbarui!");
+                }
+                else
+                {
+                    var err = await put.Content.ReadAsStringAsync();
+                    Console.WriteLine($"\nGagal memperbarui barang: {err}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\nError: {ex.Message}");
             }
 
-            var barangLama = await get.Content.ReadFromJsonAsync<Barang>();
-
-            Console.WriteLine($"\nEdit Barang: {barangLama.Nama}");
-
-            Console.Write($"Nama Barang [{barangLama.Nama}]: ");
-            string nama = Console.ReadLine();
-            if (!string.IsNullOrEmpty(nama)) barangLama.Nama = nama;
-
-            Console.Write($"Kategori [{barangLama.Kategori}]: ");
-            string kategori = Console.ReadLine();
-            if (!string.IsNullOrEmpty(kategori)) barangLama.Kategori = kategori;
-
-            Console.Write($"Stok [{barangLama.Stok}]: ");
-            string stokInput = Console.ReadLine();
-            if (!string.IsNullOrEmpty(stokInput)) barangLama.Stok = ValidasiInput.ValidasiAngka(stokInput);
-
-            Console.Write($"Harga Beli [{barangLama.HargaBeli}]: ");
-            string beliInput = Console.ReadLine();
-            if (!string.IsNullOrEmpty(beliInput)) barangLama.HargaBeli = ValidasiInput.ValidasiDecimal(beliInput);
-
-            Console.Write($"Harga Jual [{barangLama.HargaJual}]: ");
-            string jualInput = Console.ReadLine();
-            if (!string.IsNullOrEmpty(jualInput)) barangLama.HargaJual = ValidasiInput.ValidasiDecimal(jualInput);
-
-            Console.Write($"Supplier [{barangLama.Supplier}]: ");
-            string supplier = Console.ReadLine();
-            if (!string.IsNullOrEmpty(supplier)) barangLama.Supplier = supplier;
-
-            var update = await client.PutAsJsonAsync($"http://localhost:7123/api/Barang/{id}", barangLama);
-
-            if (update.IsSuccessStatusCode)
-                Console.WriteLine("\nBarang berhasil diperbarui!");
-            else
-                Console.WriteLine("\nGagal memperbarui barang.");
-
+            Console.WriteLine("\nTekan sembarang tombol untuk kembali ke menu utama...");
             Console.ReadKey();
         }
 
 
-        public static void LihatSemuaBarang()
+
+        public static async Task LihatSemuaBarang()
         {
             Console.Clear();
             Console.WriteLine("=== DAFTAR SEMUA BARANG ===");
 
-            var daftarBarang = Manager.GetSemuaBarang();
-            var config = KonfigurasiAplikasi.Load();
-
-
-            if (daftarBarang.Count == 0)
+            var handler = new HttpClientHandler
             {
-                Console.WriteLine("Tidak ada barang tersedia.");
-            }
-            else
-            {
-                Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
-                    "ID", "Nama", "Kategori", "Stok", "Harga Beli", "Harga Jual", "Supplier");
-                Console.WriteLine(new string('-', 95));
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            };
 
-                foreach (var barang in daftarBarang)
+            using var client = new HttpClient(handler);
+            client.BaseAddress = new Uri("https://localhost:7123");
+
+            try
+            {
+                var response = await client.GetAsync("/api/Barang");
+
+                if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12:C} {5,-12:C} {6,-15}",
-                        barang.Id,
-                        barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
-                        barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
-                        barang.Stok,
-                        StokHelper.FormatCurrency(barang.HargaBeli, config),
-                        StokHelper.FormatCurrency(barang.HargaJual, config),
-                        barang.Supplier.Length > 12 ? barang.Supplier.Substring(0, 12) + "..." : barang.Supplier);
+                    var daftarBarang = await response.Content.ReadFromJsonAsync<List<Barang>>();
+                    var config = KonfigurasiAplikasi.Load();
+
+                    if (daftarBarang == null || daftarBarang.Count == 0)
+                    {
+                        Console.WriteLine("Tidak ada barang tersedia.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
+                            "ID", "Nama", "Kategori", "Stok", "Harga Beli", "Harga Jual", "Supplier");
+                        Console.WriteLine(new string('-', 95));
+
+                        foreach (var barang in daftarBarang)
+                        {
+                            Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
+                                barang.Id,
+                                barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
+                                barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
+                                barang.Stok,
+                                StokHelper.FormatCurrency(barang.HargaBeli, config),
+                                StokHelper.FormatCurrency(barang.HargaJual, config),
+                                barang.Supplier.Length > 12 ? barang.Supplier.Substring(0, 12) + "..." : barang.Supplier);
+                        }
+                    }
                 }
+                else
+                {
+                    Console.WriteLine("Gagal mengambil data barang dari API.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Terjadi kesalahan: {ex.Message}");
             }
 
             Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
             Console.ReadKey();
         }
+
+
 
         public static void HapusBarang()
         {
