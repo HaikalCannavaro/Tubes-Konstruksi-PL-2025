@@ -51,7 +51,7 @@ namespace AplikasiInventarisToko
                         ModulBarang.CariBarang();
                         break;
                     case "5":
-                        ModulBarang.LihatSemuaBarang();
+                        await ModulBarang.LihatSemuaBarang();
                         break;
                     case "6":
                         ModulTransaksi.TransaksiBarangMasuk();
