@@ -65,10 +65,16 @@ namespace AplikasiInventarisToko
                         ModulTransaksi.LihatRiwayatTransaksi();
                         break;
                     case "9":
+
                         ModulBarang.LihatLaporanInventaris();
                         break;
                     case "10":
                         ModulBarang.ExportDataKeFile();
+
+                    case "10":
+                        Console.WriteLine("Fitur belum tersedia. Tekan sembarang tombol...");
+                        Console.ReadKey();
+
                         break;
                     case "0":
                         Console.WriteLine("\nTerima kasih telah menggunakan aplikasi ini.");
