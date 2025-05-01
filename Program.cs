@@ -46,9 +46,7 @@ namespace AplikasiInventarisToko
                         ModulBarang.EditBarang();
                         break;
                     case "3":
-                        // TODO: Implementasi Hapus Barang
-                        Console.WriteLine("Fitur belum tersedia. Tekan sembarang tombol...");
-                        Console.ReadKey();
+                        ModulBarang.HapusBarang();
                         break;
                     case "4":
                         ModulBarang.CariBarang();

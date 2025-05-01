@@ -102,5 +102,17 @@ namespace AplikasiInventarisToko.Managers
             }
             return null;
         }
+
+        public bool HapusBarang(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                throw new ArgumentException("ID barang tidak boleh kosong", nameof(id));
+
+            var barang = _daftarBarang.FirstOrDefault(b => b.Id == id);
+            if (barang == null)
+                return false;
+
+            return _daftarBarang.Remove(barang);
+        }
     }
 }
