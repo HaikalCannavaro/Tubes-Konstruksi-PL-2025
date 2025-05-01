@@ -173,7 +173,7 @@ namespace AplikasiInventarisToko.Managers
                 {
                     Id = barangLama.Id,
                     TanggalMasuk = barangLama.TanggalMasuk,
-                    StokAwal = barangLama.StokAwal
+                    StokAwal = stok
                 };
 
                 bool sukses = Manager.EditBarang(id, barangBaru);
@@ -195,6 +195,8 @@ namespace AplikasiInventarisToko.Managers
             Console.WriteLine("=== DAFTAR SEMUA BARANG ===");
 
             var daftarBarang = Manager.GetSemuaBarang();
+            var config = KonfigurasiAplikasi.Load();
+
 
             if (daftarBarang.Count == 0)
             {
@@ -213,8 +215,8 @@ namespace AplikasiInventarisToko.Managers
                         barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
                         barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
                         barang.Stok,
-                        barang.HargaBeli,
-                        barang.HargaJual,
+                        StokHelper.FormatCurrency(barang.HargaBeli, config),
+                        StokHelper.FormatCurrency(barang.HargaJual, config),
                         barang.Supplier.Length > 12 ? barang.Supplier.Substring(0, 12) + "..." : barang.Supplier);
                 }
             }

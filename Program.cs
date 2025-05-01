@@ -29,8 +29,7 @@ namespace AplikasiInventarisToko
                 Console.WriteLine("8. Riwayat Transaksi");
                 Console.WriteLine("9. Laporan Inventaris");
                 Console.WriteLine("10. Export Data");
-                Console.WriteLine("11. Konfigurasi Aplikasi");
-                Console.WriteLine("12. Jalankan Web API");
+                Console.WriteLine("11. Jalankan Web API");
                 Console.WriteLine("0. Keluar");
                 Console.WriteLine("----------------------------------------");
 
@@ -70,10 +69,6 @@ namespace AplikasiInventarisToko
                         ModulLaporan.ExportDataInventaris();
                         break;
                     case "11":
-                        Console.WriteLine("Fitur belum tersedia. Tekan sembarang tombol...");
-                        Console.ReadKey();
-                        break;
-                    case "12":
                         try
                         {
                             Console.WriteLine("Menjalankan API Web...");
