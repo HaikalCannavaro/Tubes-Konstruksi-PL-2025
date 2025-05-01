@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35818.85 d17.13
+VisualStudioVersion = 17.13.35818.85
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AplikasiInventarisToko", "AplikasiInventarisToko.csproj", "{6A31C670-AF8F-4576-AE7C-074F5C0748A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API", "..\API\API.csproj", "{FE7645FB-11AD-4BD3-BD60-4D19CB0BAC58}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{6A31C670-AF8F-4576-AE7C-074F5C0748A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A31C670-AF8F-4576-AE7C-074F5C0748A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A31C670-AF8F-4576-AE7C-074F5C0748A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE7645FB-11AD-4BD3-BD60-4D19CB0BAC58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE7645FB-11AD-4BD3-BD60-4D19CB0BAC58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE7645FB-11AD-4BD3-BD60-4D19CB0BAC58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE7645FB-11AD-4BD3-BD60-4D19CB0BAC58}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
