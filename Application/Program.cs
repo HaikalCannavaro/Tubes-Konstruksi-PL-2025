@@ -45,28 +45,28 @@ namespace AplikasiInventarisToko
                         await ModulBarang.EditBarang();
                         break;
                     case "3":
-                        ModulBarang.HapusBarang();
+                        await ModulBarang.HapusBarang();
                         break;
                     case "4":
-                        ModulBarang.CariBarang();
+                        await ModulBarang.CariBarang();
                         break;
                     case "5":
                         await ModulBarang.LihatSemuaBarang();
                         break;
                     case "6":
-                        ModulTransaksi.TransaksiBarangMasuk();
+                        await ModulTransaksi.TransaksiBarangMasuk();
                         break;
                     case "7":
-                        ModulTransaksi.TransaksiBarangKeluar();
+                        await ModulTransaksi.TransaksiBarangKeluar();
                         break;
                     case "8":
-                        ModulTransaksi.LihatRiwayatTransaksi();
+                        await ModulTransaksi.LihatRiwayatTransaksi();
                         break;
                     case "9":
-                        ModulLaporan.TampilkanLaporanInventaris();
+                        await ModulLaporan.TampilkanLaporanInventaris();
                         break;
                     case "10":
-                        ModulLaporan.ExportDataInventaris();
+                        await ModulLaporan.ExportDataInventaris();
                         break;
                     case "0":
                         Console.WriteLine("\nTerima kasih telah menggunakan aplikasi ini.");

@@ -13,6 +13,21 @@ namespace AplikasiInventarisToko.Utils
             return barang.StokAwal == 0 ? barang.Stok : barang.StokAwal;
         }
 
+        public static int HitungStokAwal(Barang barang, List<Transaksi> transaksiList)
+        {
+            if (barang == null || transaksiList == null) return 0;
+
+            var masuk = transaksiList
+                .Where(t => t.BarangId == barang.Id && t.Jenis.ToLower() == "masuk")
+                .Sum(t => t.Jumlah);
+
+            var keluar = transaksiList
+                .Where(t => t.BarangId == barang.Id && t.Jenis.ToLower() == "keluar")
+                .Sum(t => t.Jumlah);
+
+            return barang.Stok + keluar - masuk;
+        }
+
 
 
         public static double HitungPersentaseStok(Barang barang, int stokAwal)

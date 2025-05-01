@@ -1,27 +1,40 @@
-﻿using System;
-using System.Globalization;
-using System.IO;
-using AplikasiInventarisToko.Models;
+﻿using AplikasiInventarisToko.Models;
 using AplikasiInventarisToko.Utils;
-using AplikasiInventarisToko.Modules;
+using System.Globalization;
+using System.Net.Http.Json;
 
 namespace AplikasiInventarisToko.Managers
 {
     public static class ModulLaporan
     {
-        private static BarangManager<Barang> _barangManager = ModulBarang.Manager;
         private static readonly KonfigurasiAplikasi _config = KonfigurasiAplikasi.Load();
 
-        public static void TampilkanLaporanInventaris()
+        private static HttpClient GetClient()
+        {
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            };
+
+            var client = new HttpClient(handler)
+            {
+                BaseAddress = new Uri("https://localhost:7123")
+            };
+
+            return client;
+        }
+
+        public static async Task TampilkanLaporanInventaris()
         {
             Console.Clear();
             Console.WriteLine("=== LAPORAN INVENTARIS BARANG ===\n");
 
-            var daftarBarang = _barangManager.GetSemuaBarang();
-            var transaksiManager = new TransaksiManager(_barangManager);
-            var config = KonfigurasiAplikasi.Load();
+            using var client = GetClient();
 
-            if (daftarBarang.Count == 0)
+            var daftarBarang = await client.GetFromJsonAsync<List<Barang>>("/api/Barang");
+            var daftarTransaksi = await client.GetFromJsonAsync<List<Transaksi>>("/api/Transaksi");
+
+            if (daftarBarang == null || daftarBarang.Count == 0)
             {
                 Console.WriteLine("Tidak ada data barang.");
             }
@@ -29,9 +42,9 @@ namespace AplikasiInventarisToko.Managers
             {
                 foreach (var barang in daftarBarang)
                 {
-                    int stokAwal = StokHelper.HitungStokAwal(barang, transaksiManager);
+                    int stokAwal = StokHelper.HitungStokAwal(barang, daftarTransaksi);
                     double persentaseStok = StokHelper.HitungPersentaseStok(barang, stokAwal);
-                    string status = StokHelper.TentukanStatus(barang, persentaseStok, config);
+                    string status = StokHelper.TentukanStatus(barang, persentaseStok, _config);
                     int lamaDiGudang = (int)(DateTime.Now - barang.TanggalMasuk).TotalDays;
 
                     Console.WriteLine($"ID             : {barang.Id}");
@@ -39,7 +52,7 @@ namespace AplikasiInventarisToko.Managers
                     Console.WriteLine($"Tanggal Masuk  : {barang.TanggalMasuk:dd-MM-yyyy}");
                     Console.WriteLine($"Lama di Gudang : {lamaDiGudang} hari");
                     Console.WriteLine($"Stok           : {barang.Stok}/{stokAwal} ({persentaseStok:N0}%)");
-                    Console.WriteLine($"Harga Beli     : {StokHelper.FormatCurrency(barang.HargaBeli, config)}");
+                    Console.WriteLine($"Harga Beli     : {StokHelper.FormatCurrency(barang.HargaBeli, _config)}");
                     Console.WriteLine($"Status         : {status}");
                     Console.WriteLine(new string('-', 40));
                 }
@@ -49,41 +62,37 @@ namespace AplikasiInventarisToko.Managers
             Console.ReadLine();
         }
 
-
-
-
-        public static void ExportDataInventaris()
+        public static async Task ExportDataInventaris()
         {
             Console.Clear();
             Console.WriteLine("=== EXPORT DATA BARANG ===");
 
-            var config = KonfigurasiAplikasi.Load();
-            string filePath = config.ExportPath ?? $"data_barang_{DateTime.Now:yyyy-MM-dd_HH.mm.ss}.csv";
+            var filePath = _config.ExportPath ?? $"data_barang_{DateTime.Now:yyyy-MM-dd_HH.mm.ss}.csv";
 
-            var daftarBarang = _barangManager.GetSemuaBarang();
-            var transaksiManager = new TransaksiManager(_barangManager);
+            using var client = GetClient();
 
-            if (daftarBarang.Count == 0)
+            var daftarBarang = await client.GetFromJsonAsync<List<Barang>>("/api/Barang");
+            var daftarTransaksi = await client.GetFromJsonAsync<List<Transaksi>>("/api/Transaksi");
+
+            if (daftarBarang == null || daftarBarang.Count == 0)
             {
                 Console.WriteLine("Tidak ada data yang bisa diekspor.");
             }
             else
             {
-                using (StreamWriter writer = new StreamWriter(filePath))
+                using var writer = new StreamWriter(filePath);
+                writer.WriteLine("Id,Nama,Kategori,Supplier,HargaBeli,HargaJual,StokSekarang,StokAwal,Persentase,Status");
+
+                foreach (var barang in daftarBarang)
                 {
-                    writer.WriteLine("Id,Nama,Kategori,Supplier,HargaBeli,HargaJual,StokSekarang,StokAwal,Persentase,Status");
+                    int stokAwal = StokHelper.HitungStokAwal(barang, daftarTransaksi);
+                    double persentaseStok = StokHelper.HitungPersentaseStok(barang, stokAwal);
+                    string status = StokHelper.TentukanStatus(barang, persentaseStok, _config);
 
-                    foreach (var barang in daftarBarang)
-                    {
-                        int stokAwal = StokHelper.HitungStokAwal(barang, transaksiManager);
-                        double persentaseStok = StokHelper.HitungPersentaseStok(barang, stokAwal);
-                        string status = StokHelper.TentukanStatus(barang, persentaseStok, config);
-
-                        writer.WriteLine($"{barang.Id},{barang.Nama},{barang.Kategori},{barang.Supplier}," +
-                                         $"{StokHelper.FormatCurrency(barang.HargaBeli, config)}," +
-                                         $"{StokHelper.FormatCurrency(barang.HargaJual, config)}," +
-                                         $"{barang.Stok},{stokAwal},{persentaseStok:N0},{status}");
-                    }
+                    writer.WriteLine($"{barang.Id},{barang.Nama},{barang.Kategori},{barang.Supplier}," +
+                                     $"{StokHelper.FormatCurrency(barang.HargaBeli, _config)}," +
+                                     $"{StokHelper.FormatCurrency(barang.HargaJual, _config)}," +
+                                     $"{barang.Stok},{stokAwal},{persentaseStok:N0},{status}");
                 }
 
                 Console.WriteLine($"Data berhasil diekspor ke file: {filePath}");
@@ -92,7 +101,5 @@ namespace AplikasiInventarisToko.Managers
             Console.WriteLine("Tekan Enter untuk kembali...");
             Console.ReadLine();
         }
-
-
     }
 }
