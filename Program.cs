@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using AplikasiInventarisToko.Managers;
 using AplikasiInventarisToko.Models;
+using AplikasiInventarisToko.Utils;
+using AplikasiInventarisToko.Managers;
+using AplikasiInventarisToko.Modules;
 
 namespace AplikasiInventarisToko
 {
@@ -24,9 +26,10 @@ namespace AplikasiInventarisToko
                 Console.WriteLine("5. Tampilkan Semua Barang");
                 Console.WriteLine("6. Transaksi Barang Masuk");
                 Console.WriteLine("7. Transaksi Barang Keluar");
-                Console.WriteLine("8. Laporan Inventaris");
-                Console.WriteLine("9. Export Data");
-                Console.WriteLine("10. Konfigurasi Aplikasi");
+                Console.WriteLine("8. Riwayat Transaksi");
+                Console.WriteLine("9. Laporan Inventaris");
+                Console.WriteLine("10. Export Data");
+                Console.WriteLine("11. Konfigurasi Aplikasi");
                 Console.WriteLine("0. Keluar");
                 Console.WriteLine("----------------------------------------");
 
@@ -41,16 +44,32 @@ namespace AplikasiInventarisToko
                     case "2":
                         ModulBarang.EditBarang();
                         break;
+                    case "3":
+                        // TODO: Implementasi Hapus Barang
+                        Console.WriteLine("Fitur belum tersedia. Tekan sembarang tombol...");
+                        Console.ReadKey();
+                        break;
+                    case "4":
+                        ModulBarang.CariBarang();
+                        break;
                     case "5":
                         ModulBarang.LihatSemuaBarang();
                         break;
+                    case "6":
+                        ModulTransaksi.TransaksiBarangMasuk();
+                        break;
+                    case "7":
+                        ModulTransaksi.TransaksiBarangKeluar();
+                        break;
                     case "8":
-                        ModulBarang.LihatLaporanInventaris();
+                        ModulTransaksi.LihatRiwayatTransaksi();
                         break;
                     case "9":
+                        ModulBarang.LihatLaporanInventaris();
+                        break;
+                    case "10":
                         ModulBarang.ExportDataKeFile();
                         break;
-
                     case "0":
                         Console.WriteLine("\nTerima kasih telah menggunakan aplikasi ini.");
                         isRunning = false;
