@@ -17,6 +17,7 @@ namespace AplikasiInventarisToko.Modules
             try
             {
                 var daftarBarang = ModulBarang.Manager.GetSemuaBarang();
+                var config = KonfigurasiAplikasi.Load();
                 if (daftarBarang.Count == 0)
                 {
                     Console.WriteLine("Tidak ada barang tersedia.");
@@ -34,8 +35,8 @@ namespace AplikasiInventarisToko.Modules
                             barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
                             barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
                             barang.Stok,
-                            barang.HargaBeli,
-                            barang.HargaJual,
+                            StokHelper.FormatCurrency(barang.HargaBeli, config),
+                            StokHelper.FormatCurrency(barang.HargaJual, config),
                             barang.Supplier.Length > 12 ? barang.Supplier.Substring(0, 12) + "..." : barang.Supplier);
                     }
                 }

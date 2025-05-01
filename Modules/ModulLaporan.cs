@@ -58,7 +58,7 @@ namespace AplikasiInventarisToko.Managers
             Console.WriteLine("=== EXPORT DATA BARANG ===");
 
             var config = KonfigurasiAplikasi.Load();
-            string filePath = config.ExportPath ?? $"data_barang_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+            string filePath = config.ExportPath ?? $"data_barang_{DateTime.Now:yyyy-MM-dd_HH.mm.ss}.csv";
 
             var daftarBarang = _barangManager.GetSemuaBarang();
             var transaksiManager = new TransaksiManager(_barangManager);
