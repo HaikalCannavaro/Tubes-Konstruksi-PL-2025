@@ -225,18 +225,68 @@ namespace AplikasiInventarisToko.Managers
             Console.ReadKey();
         }
 
+        private enum HapusBarangState
+        {
+            ListBarang,
+            InputId,
+            Konfirmasi,
+            ProsesHapus,
+            Selesai
+        }
+
+        private class HapusBarangContext
+        {
+            public HapusBarangState CurrentState { get; set; }
+            public List<Barang> DaftarBarang { get; set; }
+            public string IdBarang { get; set; }
+            public Barang BarangTerpilih { get; set; }
+            public bool HasilHapus { get; set; }
+        }
+
         public static void HapusBarang()
         {
             Console.Clear();
             Console.WriteLine("=== HAPUS BARANG ===");
 
-            var daftarBarang = Manager.GetSemuaBarang();
+            var context = new HapusBarangContext
+            {
+                CurrentState = HapusBarangState.ListBarang,
+                DaftarBarang = Manager.GetSemuaBarang()
+            };
 
-            if (daftarBarang.Count == 0)
+            while (context.CurrentState != HapusBarangState.Selesai)
+            {
+                switch (context.CurrentState)
+                {
+                    case HapusBarangState.ListBarang:
+                        HandleListBarangState(context);
+                        break;
+                    case HapusBarangState.InputId:
+                        HandleInputIdState(context);
+                        break;
+                    case HapusBarangState.Konfirmasi:
+                        HandleKonfirmasiState(context);
+                        break;
+                    case HapusBarangState.ProsesHapus:
+                        HandleProsesHapusState(context);
+                        break;
+                }
+            }
+
+            Console.WriteLine(context.HasilHapus
+                ? "\nBarang berhasil dihapus!"
+                : "\nPenghapusan barang dibatalkan atau gagal.");
+
+            Console.WriteLine("\nTekan sembarang tombol untuk kembali ke menu utama...");
+            Console.ReadKey();
+        }
+
+        private static void HandleListBarangState(HapusBarangContext context)
+        {
+            if (context.DaftarBarang.Count == 0)
             {
                 Console.WriteLine("Tidak ada barang untuk dihapus.");
-                Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
-                Console.ReadKey();
+                context.CurrentState = HapusBarangState.Selesai;
                 return;
             }
 
@@ -244,7 +294,7 @@ namespace AplikasiInventarisToko.Managers
                 "ID", "Nama", "Kategori", "Stok");
             Console.WriteLine(new string('-', 55));
 
-            foreach (var barang in daftarBarang)
+            foreach (var barang in context.DaftarBarang)
             {
                 Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8}",
                     barang.Id,
@@ -253,40 +303,74 @@ namespace AplikasiInventarisToko.Managers
                     barang.Stok);
             }
 
-            Console.Write("\nMasukkan ID barang yang ingin dihapus: ");
-            string id = Console.ReadLine();
+            context.CurrentState = HapusBarangState.InputId;
+        }
 
-            Console.Write($"\nApakah Anda yakin ingin menghapus barang dengan ID {id}? (y/n): ");
-            string konfirmasi = Console.ReadLine().ToLower();
+        private static void HandleInputIdState(HapusBarangContext context)
+        {
+            Console.Write("\nMasukkan ID barang yang ingin dihapus (atau 'batal' untuk kembali): ");
+            string input = Console.ReadLine();
 
-            if (konfirmasi != "y")
+            if (input.ToLower() == "batal")
             {
-                Console.WriteLine("\nPenghapusan dibatalkan.");
-                Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
-                Console.ReadKey();
+                context.CurrentState = HapusBarangState.Selesai;
                 return;
             }
 
+            var barang = context.DaftarBarang.FirstOrDefault(b => b.Id == input);
+            if (barang == null)
+            {
+                Console.WriteLine("ID barang tidak ditemukan. Silakan coba lagi.");
+                return;
+            }
+
+            context.BarangTerpilih = barang;
+            context.IdBarang = input;
+            context.CurrentState = HapusBarangState.Konfirmasi;
+        }
+
+        private static void HandleKonfirmasiState(HapusBarangContext context)
+        {
+            Console.WriteLine($"\nDetail Barang yang akan dihapus:");
+            Console.WriteLine($"ID: {context.BarangTerpilih.Id}");
+            Console.WriteLine($"Nama: {context.BarangTerpilih.Nama}");
+            Console.WriteLine($"Kategori: {context.BarangTerpilih.Kategori}");
+            Console.WriteLine($"Stok: {context.BarangTerpilih.Stok}");
+
+            Console.Write($"\nApakah Anda yakin ingin menghapus barang ini? (y/n/t=lihat lagi): ");
+            string konfirmasi = Console.ReadLine().ToLower();
+
+            switch (konfirmasi)
+            {
+                case "y":
+                    context.CurrentState = HapusBarangState.ProsesHapus;
+                    break;
+                case "n":
+                    context.CurrentState = HapusBarangState.Selesai;
+                    context.HasilHapus = false;
+                    break;
+                case "t":
+                    context.CurrentState = HapusBarangState.ListBarang;
+                    break;
+                default:
+                    Console.WriteLine("Input tidak valid. Silakan pilih y/n/t.");
+                    break;
+            }
+        }
+
+        private static void HandleProsesHapusState(HapusBarangContext context)
+        {
             try
             {
-                bool sukses = Manager.HapusBarang(id);
-
-                if (sukses)
-                {
-                    Console.WriteLine("\nBarang berhasil dihapus!");
-                }
-                else
-                {
-                    Console.WriteLine("\nGagal menghapus barang. ID tidak ditemukan.");
-                }
+                context.HasilHapus = Manager.HapusBarang(context.IdBarang);
+                context.CurrentState = HapusBarangState.Selesai;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"\nError: {ex.Message}");
+                context.CurrentState = HapusBarangState.Konfirmasi;
             }
-
-            Console.WriteLine("\nTekan sembarang tombol untuk kembali ke menu utama...");
-            Console.ReadKey();
         }
+
     }
 }
