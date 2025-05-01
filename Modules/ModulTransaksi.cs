@@ -169,5 +169,14 @@ namespace AplikasiInventarisToko.Modules
             Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
             Console.ReadKey();
         }
+        public static bool CreateTransaksiMasuk(Transaksi t) =>
+            _transaksiManager.TransaksiMasuk(t.BarangId, t.Jumlah, t.Keterangan);
+
+        public static bool CreateTransaksiKeluar(Transaksi t) =>
+            _transaksiManager.TransaksiKeluar(t.BarangId, t.Jumlah, t.Keterangan);
+
+        public static List<Transaksi> GetSemuaTransaksi() =>
+            _transaksiManager.GetSemuaTransaksi();
+
     }
 }

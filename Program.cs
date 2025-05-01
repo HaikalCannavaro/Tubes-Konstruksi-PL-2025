@@ -30,6 +30,7 @@ namespace AplikasiInventarisToko
                 Console.WriteLine("9. Laporan Inventaris");
                 Console.WriteLine("10. Export Data");
                 Console.WriteLine("11. Konfigurasi Aplikasi");
+                Console.WriteLine("12. Jalankan Web API");
                 Console.WriteLine("0. Keluar");
                 Console.WriteLine("----------------------------------------");
 
@@ -73,7 +74,28 @@ namespace AplikasiInventarisToko
                     case "11":
                         Console.WriteLine("Fitur belum tersedia. Tekan sembarang tombol...");
                         Console.ReadKey();
+                        break;
+                    case "12":
+                        try
+                        {
+                            Console.WriteLine("Menjalankan API Web...");
 
+                            var startInfo = new System.Diagnostics.ProcessStartInfo
+                            {
+                                FileName = "dotnet",
+                                Arguments = "run --project ../AplikasiInventarisToko.Api",
+                                UseShellExecute = false
+                            };
+
+                            System.Diagnostics.Process.Start(startInfo);
+                            Console.WriteLine("API berjalan di background. Tekan tombol untuk kembali...");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Gagal menjalankan API: {ex.Message}");
+                        }
+
+                        Console.ReadKey();
                         break;
                     case "0":
                         Console.WriteLine("\nTerima kasih telah menggunakan aplikasi ini.");
