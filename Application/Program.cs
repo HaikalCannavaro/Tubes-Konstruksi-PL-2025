@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using AplikasiInventarisToko.Models;
 using AplikasiInventarisToko.Utils;
 using AplikasiInventarisToko.Managers;
@@ -9,7 +10,7 @@ namespace AplikasiInventarisToko
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             bool isRunning = true;
 
@@ -38,10 +39,10 @@ namespace AplikasiInventarisToko
                 switch (input)
                 {
                     case "1":
-                        ModulBarang.TambahBarangBaru();
+                        await ModulBarang.TambahBarangBaru();
                         break;
                     case "2":
-                        ModulBarang.EditBarang();
+                        await ModulBarang.EditBarang();
                         break;
                     case "3":
                         ModulBarang.HapusBarang();

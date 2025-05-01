@@ -1,6 +1,7 @@
 ﻿using AplikasiInventarisToko.Models;
 using AplikasiInventarisToko.Utils;
 using System;
+using System.Net.Http.Json;
 
 namespace AplikasiInventarisToko.Managers
 {
@@ -9,7 +10,7 @@ namespace AplikasiInventarisToko.Managers
         private static BarangManager<Barang> _barangManager = new BarangManager<Barang>();
         public static BarangManager<Barang> Manager => _barangManager;
 
-        public static void TambahBarangBaru()
+        public static async Task TambahBarangBaru()
         {
             Console.Clear();
             Console.WriteLine("=== TAMBAH BARANG BARU ===");
@@ -34,22 +35,30 @@ namespace AplikasiInventarisToko.Managers
                 Console.Write("Supplier: ");
                 string supplier = Console.ReadLine();
 
-                Barang barangBaru = new Barang(nama, kategori, stok, hargaBeli, hargaJual, supplier)
+                var barang = new Barang(nama, kategori, stok, hargaBeli, hargaJual, supplier)
                 {
                     StokAwal = stok
                 };
 
-
-                bool sukses = Manager.TambahBarang(barangBaru);
-
-                if (sukses)
+                var handler = new HttpClientHandler
                 {
-                    Console.WriteLine("\nBarang berhasil ditambahkan!");
-                    Console.WriteLine($"ID Barang: {barangBaru.Id}");
+                    // Bypass validasi sertifikat lokal (boleh untuk development saja)
+                    ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+                };
+
+                using var client = new HttpClient(handler);
+                client.BaseAddress = new Uri("https://localhost:7123");
+
+
+                var response = await client.PostAsJsonAsync("/api/Barang", barang);
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("\nBarang berhasil ditambahkan ke API!");
                 }
                 else
                 {
-                    Console.WriteLine("\nGagal menambahkan barang.");
+                    var msg = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"\nGagal menambahkan barang: {msg}");
                 }
             }
             catch (Exception ex)
@@ -60,6 +69,7 @@ namespace AplikasiInventarisToko.Managers
             Console.WriteLine("\nTekan sembarang tombol untuk kembali ke menu utama...");
             Console.ReadKey();
         }
+
 
         // Implementasi fitur Cari Barang
         public static void CariBarang()
@@ -108,86 +118,62 @@ namespace AplikasiInventarisToko.Managers
         }
 
 
-        public static void EditBarang()
+        public static async Task EditBarang()
         {
             Console.Clear();
-            Console.WriteLine("=== EDIT BARANG ===");
+            Console.WriteLine("=== EDIT BARANG (API) ===");
 
-            var daftarBarang = Manager.GetSemuaBarang();
-
-            if (daftarBarang.Count == 0)
-            {
-                Console.WriteLine("Tidak ada barang untuk diedit.");
-                Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
-                Console.ReadKey();
-                return;
-            }
-
-            foreach (var barang in daftarBarang)
-            {
-                Console.WriteLine($"[{barang.Id}] {barang.Nama} - Stok: {barang.Stok}");
-            }
-
-            Console.Write("\nMasukkan ID barang yang ingin diedit: ");
+            Console.Write("Masukkan ID Barang yang ingin diedit: ");
             string id = Console.ReadLine();
 
-            var barangLama = Manager.GetBarangById(id);
+            using var client = new HttpClient();
+            var get = await client.GetAsync($"http://localhost:7123/api/Barang/{id}");
 
-            if (barangLama == null)
+            if (!get.IsSuccessStatusCode)
             {
                 Console.WriteLine("Barang tidak ditemukan.");
-                Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
                 Console.ReadKey();
                 return;
             }
 
-            try
-            {
-                Console.WriteLine($"\nEdit Barang: {barangLama.Nama}");
+            var barangLama = await get.Content.ReadFromJsonAsync<Barang>();
 
-                Console.Write($"Nama Barang [{barangLama.Nama}]: ");
-                string nama = Console.ReadLine();
-                nama = string.IsNullOrEmpty(nama) ? barangLama.Nama : nama;
+            Console.WriteLine($"\nEdit Barang: {barangLama.Nama}");
 
-                Console.Write($"Kategori [{barangLama.Kategori}]: ");
-                string kategori = Console.ReadLine();
-                kategori = string.IsNullOrEmpty(kategori) ? barangLama.Kategori : kategori;
+            Console.Write($"Nama Barang [{barangLama.Nama}]: ");
+            string nama = Console.ReadLine();
+            if (!string.IsNullOrEmpty(nama)) barangLama.Nama = nama;
 
-                Console.Write($"Stok [{barangLama.Stok}]: ");
-                string stokInput = Console.ReadLine();
-                int stok = string.IsNullOrEmpty(stokInput) ? barangLama.Stok : ValidasiInput.ValidasiAngka(stokInput);
+            Console.Write($"Kategori [{barangLama.Kategori}]: ");
+            string kategori = Console.ReadLine();
+            if (!string.IsNullOrEmpty(kategori)) barangLama.Kategori = kategori;
 
-                Console.Write($"Harga Beli [{barangLama.HargaBeli}]: ");
-                string beliInput = Console.ReadLine();
-                decimal hargaBeli = string.IsNullOrEmpty(beliInput) ? barangLama.HargaBeli : ValidasiInput.ValidasiDecimal(beliInput);
+            Console.Write($"Stok [{barangLama.Stok}]: ");
+            string stokInput = Console.ReadLine();
+            if (!string.IsNullOrEmpty(stokInput)) barangLama.Stok = ValidasiInput.ValidasiAngka(stokInput);
 
-                Console.Write($"Harga Jual [{barangLama.HargaJual}]: ");
-                string jualInput = Console.ReadLine();
-                decimal hargaJual = string.IsNullOrEmpty(jualInput) ? barangLama.HargaJual : ValidasiInput.ValidasiDecimal(jualInput);
+            Console.Write($"Harga Beli [{barangLama.HargaBeli}]: ");
+            string beliInput = Console.ReadLine();
+            if (!string.IsNullOrEmpty(beliInput)) barangLama.HargaBeli = ValidasiInput.ValidasiDecimal(beliInput);
 
-                Console.Write($"Supplier [{barangLama.Supplier}]: ");
-                string supplier = Console.ReadLine();
-                supplier = string.IsNullOrEmpty(supplier) ? barangLama.Supplier : supplier;
+            Console.Write($"Harga Jual [{barangLama.HargaJual}]: ");
+            string jualInput = Console.ReadLine();
+            if (!string.IsNullOrEmpty(jualInput)) barangLama.HargaJual = ValidasiInput.ValidasiDecimal(jualInput);
 
-                Barang barangBaru = new Barang(nama, kategori, stok, hargaBeli, hargaJual, supplier)
-                {
-                    Id = barangLama.Id,
-                    TanggalMasuk = barangLama.TanggalMasuk,
-                    StokAwal = stok
-                };
+            Console.Write($"Supplier [{barangLama.Supplier}]: ");
+            string supplier = Console.ReadLine();
+            if (!string.IsNullOrEmpty(supplier)) barangLama.Supplier = supplier;
 
-                bool sukses = Manager.EditBarang(id, barangBaru);
+            var update = await client.PutAsJsonAsync($"http://localhost:7123/api/Barang/{id}", barangLama);
 
-                Console.WriteLine(sukses ? "\nBarang berhasil diperbarui!" : "\nGagal memperbarui barang.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"\nError: {ex.Message}");
-            }
+            if (update.IsSuccessStatusCode)
+                Console.WriteLine("\nBarang berhasil diperbarui!");
+            else
+                Console.WriteLine("\nGagal memperbarui barang.");
 
-            Console.WriteLine("\nTekan sembarang tombol untuk kembali ke menu utama...");
             Console.ReadKey();
         }
+
 
         public static void LihatSemuaBarang()
         {
