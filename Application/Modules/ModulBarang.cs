@@ -10,6 +10,34 @@ namespace AplikasiInventarisToko.Managers
         private static BarangManager<Barang> _barangManager = new BarangManager<Barang>();
         public static BarangManager<Barang> Manager => _barangManager;
 
+        // Helper method untuk menampilkan daftar barang dalam format tabel
+        private static void TampilkanDaftarBarang(List<Barang> daftarBarang)
+        {
+            var config = KonfigurasiAplikasi.Load();
+
+            if (daftarBarang == null || daftarBarang.Count == 0)
+            {
+                Console.WriteLine("Tidak ada barang tersedia.");
+                return;
+            }
+
+            Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
+                "ID", "Nama", "Kategori", "Stok", "Harga Beli", "Harga Jual", "Supplier");
+            Console.WriteLine(new string('-', 95));
+
+            foreach (var barang in daftarBarang)
+            {
+                Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
+                    barang.Id,
+                    barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
+                    barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
+                    barang.Stok,
+                    StokHelper.FormatCurrency(barang.HargaBeli, config),
+                    StokHelper.FormatCurrency(barang.HargaJual, config),
+                    barang.Supplier.Length > 12 ? barang.Supplier.Substring(0, 12) + "..." : barang.Supplier);
+            }
+        }
+
         public static async Task TambahBarangBaru()
         {
             Console.Clear();
@@ -96,7 +124,6 @@ namespace AplikasiInventarisToko.Managers
                 if (response.IsSuccessStatusCode)
                 {
                     var hasil = await response.Content.ReadFromJsonAsync<List<Barang>>();
-                    var config = KonfigurasiAplikasi.Load();
 
                     if (hasil == null || hasil.Count == 0)
                     {
@@ -104,21 +131,8 @@ namespace AplikasiInventarisToko.Managers
                     }
                     else
                     {
-                        Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
-                            "ID", "Nama", "Kategori", "Stok", "Harga Beli", "Harga Jual", "Supplier");
-                        Console.WriteLine(new string('-', 95));
-
-                        foreach (var barang in hasil)
-                        {
-                            Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
-                                barang.Id,
-                                barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
-                                barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
-                                barang.Stok,
-                                StokHelper.FormatCurrency(barang.HargaBeli, config),
-                                StokHelper.FormatCurrency(barang.HargaJual, config),
-                                barang.Supplier.Length > 12 ? barang.Supplier.Substring(0, 12) + "..." : barang.Supplier);
-                        }
+                        // Menggunakan fungsi helper untuk menampilkan hasil pencarian
+                        TampilkanDaftarBarang(hasil);
                     }
                 }
                 else
@@ -262,30 +276,8 @@ namespace AplikasiInventarisToko.Managers
                 if (response.IsSuccessStatusCode)
                 {
                     var daftarBarang = await response.Content.ReadFromJsonAsync<List<Barang>>();
-                    var config = KonfigurasiAplikasi.Load();
-
-                    if (daftarBarang == null || daftarBarang.Count == 0)
-                    {
-                        Console.WriteLine("Tidak ada barang tersedia.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
-                            "ID", "Nama", "Kategori", "Stok", "Harga Beli", "Harga Jual", "Supplier");
-                        Console.WriteLine(new string('-', 95));
-
-                        foreach (var barang in daftarBarang)
-                        {
-                            Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
-                                barang.Id,
-                                barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
-                                barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
-                                barang.Stok,
-                                StokHelper.FormatCurrency(barang.HargaBeli, config),
-                                StokHelper.FormatCurrency(barang.HargaJual, config),
-                                barang.Supplier.Length > 12 ? barang.Supplier.Substring(0, 12) + "..." : barang.Supplier);
-                        }
-                    }
+                    // Menggunakan fungsi helper untuk menampilkan daftar barang
+                    TampilkanDaftarBarang(daftarBarang);
                 }
                 else
                 {
@@ -504,7 +496,5 @@ namespace AplikasiInventarisToko.Managers
                 context.CurrentState = HapusBarangState.Konfirmasi;
             }
         }
-
-
     }
 }
