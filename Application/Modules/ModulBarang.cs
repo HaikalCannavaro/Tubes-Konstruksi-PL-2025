@@ -96,6 +96,27 @@ namespace AplikasiInventarisToko.Managers
             Console.ReadKey();
         }
 
+        //UNTUK UNIT TESTING 
+        public static Barang BuatBarangBaru(
+            string nama,
+            string kategori,
+            string stokInput,
+            string hargaBeliInput,
+            string hargaJualInput,
+            string supplier
+        )
+        {
+            int stok = ValidasiInput.ValidasiAngka(stokInput);
+            decimal hargaBeli = ValidasiInput.ValidasiDecimal(hargaBeliInput);
+            decimal hargaJual = ValidasiInput.ValidasiDecimal(hargaJualInput);
+
+            var barang = new Barang(nama, kategori, stok, hargaBeli, hargaJual, supplier)
+            {
+                StokAwal = stok
+            };
+
+            return barang;
+        }
 
         public static async Task CariBarang()
         {
