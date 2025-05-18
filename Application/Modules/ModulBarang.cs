@@ -10,7 +10,6 @@ namespace AplikasiInventarisToko.Managers
         private static BarangManager<Barang> _barangManager = new BarangManager<Barang>();
         public static BarangManager<Barang> Manager => _barangManager;
 
-        // Helper method untuk menampilkan daftar barang dalam format tabel
         private static void TampilkanDaftarBarang(List<Barang> daftarBarang)
         {
             var config = KonfigurasiAplikasi.Load();
@@ -131,7 +130,6 @@ namespace AplikasiInventarisToko.Managers
                     }
                     else
                     {
-                        // Menggunakan fungsi helper untuk menampilkan hasil pencarian
                         TampilkanDaftarBarang(hasil);
                     }
                 }
@@ -276,7 +274,6 @@ namespace AplikasiInventarisToko.Managers
                 if (response.IsSuccessStatusCode)
                 {
                     var daftarBarang = await response.Content.ReadFromJsonAsync<List<Barang>>();
-                    // Menggunakan fungsi helper untuk menampilkan daftar barang
                     TampilkanDaftarBarang(daftarBarang);
                 }
                 else
