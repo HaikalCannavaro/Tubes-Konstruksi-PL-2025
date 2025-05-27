@@ -1,5 +1,6 @@
 using AplikasiInventarisToko.Models;
 using AplikasiInventarisToko.Utils;
+using AplikasiInventarisToko.Helpers;
 using System;
 using System.Net.Http.Json;
 
@@ -9,33 +10,6 @@ namespace AplikasiInventarisToko.Managers
     {
         private static BarangManager<Barang> _barangManager = new BarangManager<Barang>();
         public static BarangManager<Barang> Manager => _barangManager;
-
-        private static void TampilkanDaftarBarang(List<Barang> daftarBarang)
-        {
-            var config = KonfigurasiAplikasi.Load();
-
-            if (daftarBarang == null || daftarBarang.Count == 0)
-            {
-                Console.WriteLine("Tidak ada barang tersedia.");
-                return;
-            }
-
-            Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
-                "ID", "Nama", "Kategori", "Stok", "Harga Beli", "Harga Jual", "Supplier");
-            Console.WriteLine(new string('-', 95));
-
-            foreach (var barang in daftarBarang)
-            {
-                Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8} {4,-12} {5,-12} {6,-15}",
-                    barang.Id,
-                    barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
-                    barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
-                    barang.Stok,
-                    StokHelper.FormatCurrency(barang.HargaBeli, config),
-                    StokHelper.FormatCurrency(barang.HargaJual, config),
-                    barang.Supplier.Length > 12 ? barang.Supplier.Substring(0, 12) + "..." : barang.Supplier);
-            }
-        }
 
         public static async Task TambahBarangBaru()
         {
@@ -75,7 +49,6 @@ namespace AplikasiInventarisToko.Managers
                 using var client = new HttpClient(handler);
                 client.BaseAddress = new Uri("https://localhost:7123");
 
-
                 var response = await client.PostAsJsonAsync("/api/Barang", barang);
                 if (response.IsSuccessStatusCode)
                 {
@@ -94,28 +67,6 @@ namespace AplikasiInventarisToko.Managers
 
             Console.WriteLine("\nTekan sembarang tombol untuk kembali ke menu utama...");
             Console.ReadKey();
-        }
-
-        //UNTUK UNIT TESTING 
-        public static Barang BuatBarangBaru(
-            string nama,
-            string kategori,
-            string stokInput,
-            string hargaBeliInput,
-            string hargaJualInput,
-            string supplier
-        )
-        {
-            int stok = ValidasiInput.ValidasiAngka(stokInput);
-            decimal hargaBeli = ValidasiInput.ValidasiDecimal(hargaBeliInput);
-            decimal hargaJual = ValidasiInput.ValidasiDecimal(hargaJualInput);
-
-            var barang = new Barang(nama, kategori, stok, hargaBeli, hargaJual, supplier)
-            {
-                StokAwal = stok
-            };
-
-            return barang;
         }
 
         public static async Task CariBarang()
@@ -151,7 +102,7 @@ namespace AplikasiInventarisToko.Managers
                     }
                     else
                     {
-                        TampilkanDaftarBarang(hasil);
+                        BarangDisplayHelper.TampilkanDaftarBarang(hasil);
                     }
                 }
                 else
@@ -168,8 +119,6 @@ namespace AplikasiInventarisToko.Managers
             Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
             Console.ReadKey();
         }
-
-
 
         public static async Task EditBarang()
         {
@@ -202,10 +151,7 @@ namespace AplikasiInventarisToko.Managers
                     return;
                 }
 
-                foreach (var barang in daftarBarang)
-                {
-                    Console.WriteLine($"[{barang.Id}] {barang.Nama} - Stok: {barang.Stok}");
-                }
+                BarangDisplayHelper.TampilkanDaftarPilihan(daftarBarang);
 
                 Console.Write("\nMasukkan ID barang yang ingin diedit: ");
                 string id = Console.ReadLine();
@@ -273,8 +219,6 @@ namespace AplikasiInventarisToko.Managers
             Console.ReadKey();
         }
 
-
-
         public static async Task LihatSemuaBarang()
         {
             Console.Clear();
@@ -295,7 +239,7 @@ namespace AplikasiInventarisToko.Managers
                 if (response.IsSuccessStatusCode)
                 {
                     var daftarBarang = await response.Content.ReadFromJsonAsync<List<Barang>>();
-                    TampilkanDaftarBarang(daftarBarang);
+                    BarangDisplayHelper.TampilkanDaftarBarang(daftarBarang);
                 }
                 else
                 {
@@ -339,7 +283,6 @@ namespace AplikasiInventarisToko.Managers
                 CurrentState = HapusBarangState.ListBarang,
                 DaftarBarang = new List<Barang>()
             };
-
 
             while (context.CurrentState != HapusBarangState.Selesai)
             {
@@ -396,18 +339,7 @@ namespace AplikasiInventarisToko.Managers
                     return;
                 }
 
-                Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8}",
-                    "ID", "Nama", "Kategori", "Stok");
-                Console.WriteLine(new string('-', 55));
-
-                foreach (var barang in context.DaftarBarang)
-                {
-                    Console.WriteLine("{0,-10} {1,-20} {2,-15} {3,-8}",
-                        barang.Id,
-                        barang.Nama.Length > 17 ? barang.Nama.Substring(0, 17) + "..." : barang.Nama,
-                        barang.Kategori.Length > 12 ? barang.Kategori.Substring(0, 12) + "..." : barang.Kategori,
-                        barang.Stok);
-                }
+                BarangDisplayHelper.TampilkanDaftarBarang(context.DaftarBarang, showFullDetails: false);
 
                 context.CurrentState = HapusBarangState.InputId;
             }
@@ -417,7 +349,6 @@ namespace AplikasiInventarisToko.Managers
                 context.CurrentState = HapusBarangState.Selesai;
             }
         }
-
 
         private static async Task HandleInputIdState(HapusBarangContext context)
         {
@@ -458,14 +389,11 @@ namespace AplikasiInventarisToko.Managers
             }
         }
 
-
         private static Task HandleKonfirmasiState(HapusBarangContext context)
         {
             Console.WriteLine($"\nDetail Barang yang akan dihapus:");
-            Console.WriteLine($"ID: {context.BarangTerpilih.Id}");
-            Console.WriteLine($"Nama: {context.BarangTerpilih.Nama}");
-            Console.WriteLine($"Kategori: {context.BarangTerpilih.Kategori}");
-            Console.WriteLine($"Stok: {context.BarangTerpilih.Stok}");
+
+            BarangDisplayHelper.TampilkanDetailBarang(context.BarangTerpilih);
 
             Console.Write($"\nApakah Anda yakin ingin menghapus barang ini? (y/n/t=lihat lagi): ");
             string konfirmasi = Console.ReadLine().ToLower();
@@ -489,8 +417,6 @@ namespace AplikasiInventarisToko.Managers
 
             return Task.CompletedTask;
         }
-
-
 
         private static async Task HandleProsesHapusState(HapusBarangContext context)
         {
