@@ -43,7 +43,7 @@ namespace AplikasiInventarisToko.Managers
                 foreach (var barang in daftarBarang)
                 {
                     int stokAwal = StokHelper.HitungStokAwal(barang, daftarTransaksi);
-                    double persentaseStok = StokHelper.HitungPersentaseStok(barang, stokAwal);
+                    double persentaseStok = StokHelper.HitungPersentaseStok(barang, barang.StokAwal);
                     string status = StokHelper.TentukanStatus(barang, persentaseStok, _config);
                     int lamaDiGudang = (int)(DateTime.Now - barang.TanggalMasuk).TotalDays;
 
@@ -51,7 +51,7 @@ namespace AplikasiInventarisToko.Managers
                     Console.WriteLine($"Nama           : {barang.Nama}");
                     Console.WriteLine($"Tanggal Masuk  : {barang.TanggalMasuk:dd-MM-yyyy}");
                     Console.WriteLine($"Lama di Gudang : {lamaDiGudang} hari");
-                    Console.WriteLine($"Stok           : {barang.Stok}/{stokAwal} ({persentaseStok:N0}%)");
+                    Console.WriteLine($"Stok           : {barang.Stok}/{barang.StokAwal} ({persentaseStok:N0}%)");
                     Console.WriteLine($"Harga Beli     : {StokHelper.FormatCurrency(barang.HargaBeli, _config)}");
                     Console.WriteLine($"Status         : {status}");
                     Console.WriteLine(new string('-', 40));
