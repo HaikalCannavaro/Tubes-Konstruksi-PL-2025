@@ -82,7 +82,7 @@ namespace UniTesting
         [ExpectedException(typeof(ArgumentException), "Transaksi dengan ID barang kosong seharusnya gagal")]
         public void TransaksiMasuk_EmptyBarangId_ShouldThrowException()
         {
-            string barangId = "";
+            string barangId = ""; // ID barang kosong
             int jumlahMasuk = 5;
             string keterangan = "Restok gagal";
 
@@ -104,7 +104,7 @@ namespace UniTesting
         [ExpectedException(typeof(ArgumentException), "Transaksi dengan ID barang yang tidak ada seharusnya gagal")]
         public void TransaksiKeluar_NonExistentBarangId_ShouldThrowException()
         {
-            string barangId = "TIDAK_ADA";
+            string barangId = "TIDAK_ADA"; // ID barang yang tidak ada
             int jumlahKeluar = 5;
             string keterangan = "Penjualan gagal";
 
