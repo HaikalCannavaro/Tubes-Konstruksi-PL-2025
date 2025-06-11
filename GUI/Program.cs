@@ -1,6 +1,7 @@
 ﻿using AplikasiInventarisToko.GUI;
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace GUI
@@ -19,6 +20,7 @@ namespace GUI
     public class MainForm : Form
     {
         private Label lblTitle;
+        private Label lblSubtitle;
         private Button btnTambahBarang;
         private Button btnEditBarang;
         private Button btnHapusBarang;
@@ -28,58 +30,98 @@ namespace GUI
         private Button btnTransaksiKeluar;
         private Button btnRiwayatTransaksi;
         private Button btnLaporanInventaris;
+        private Panel headerPanel;
+        private Panel contentPanel;
+
+        private readonly Color primaryColor = Color.FromArgb(74, 144, 226); // Blue
+        private readonly Color secondaryColor = Color.FromArgb(80, 200, 120); // Green
+        private readonly Color accentColor = Color.FromArgb(255, 87, 87); // Red
+        private readonly Color warningColor = Color.FromArgb(255, 193, 7); // Yellow
+        private readonly Color infoColor = Color.FromArgb(23, 162, 184); // Cyan
+        private readonly Color backgroundColor = Color.FromArgb(248, 249, 250); // Light gray
+        private readonly Color cardColor = Color.White;
 
         public MainForm()
         {
             InitializeComponent();
         }
 
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            using (LinearGradientBrush brush = new LinearGradientBrush(
+                this.ClientRectangle,
+                Color.FromArgb(74, 144, 226),
+                Color.FromArgb(142, 68, 173),
+                LinearGradientMode.Vertical))
+            {
+                e.Graphics.FillRectangle(brush, this.ClientRectangle);
+            }
+            base.OnPaint(e);
+        }
+
         private void InitializeComponent()
         {
-            // Form settings
-            this.Text = "InvenApp - Homepage";
-            this.Size = new Size(460, 600);
+            this.Text = "InvenApp - Sistem Inventaris Toko";
+            this.Size = new Size(520, 700);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
+            this.MinimizeBox = true;
+            this.BackColor = backgroundColor;
 
-            // Title Label
+            headerPanel = new Panel();
+            headerPanel.Dock = DockStyle.Top;
+            headerPanel.Height = 120;
+            headerPanel.BackColor = Color.Transparent;
+
             lblTitle = new Label();
-            lblTitle.Text = "InvenApp";
-            lblTitle.Font = new Font("Segoe UI", 28F, FontStyle.Bold, GraphicsUnit.Point);
+            lblTitle.Text = "📦 InvenApp";
+            lblTitle.Font = new Font("Segoe UI", 32F, FontStyle.Bold, GraphicsUnit.Point);
+            lblTitle.ForeColor = Color.White;
             lblTitle.TextAlign = ContentAlignment.MiddleCenter;
             lblTitle.Dock = DockStyle.Top;
-            lblTitle.Height = 80;
-            lblTitle.Padding = new Padding(0, 20, 0, 20);
+            lblTitle.Height = 70;
+            lblTitle.Padding = new Padding(0, 15, 0, 0);
 
-            // Panel container for buttons with grid layout (3x3)
+            lblSubtitle = new Label();
+            lblSubtitle.Text = "Sistem Manajemen Inventaris Toko";
+            lblSubtitle.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            lblSubtitle.ForeColor = Color.FromArgb(230, 230, 230);
+            lblSubtitle.TextAlign = ContentAlignment.MiddleCenter;
+            lblSubtitle.Dock = DockStyle.Fill;
+
+            headerPanel.Controls.Add(lblSubtitle);
+            headerPanel.Controls.Add(lblTitle);
+
+            contentPanel = new Panel();
+            contentPanel.Dock = DockStyle.Fill;
+            contentPanel.BackColor = Color.Transparent;
+            contentPanel.Padding = new Padding(30, 20, 30, 30);
+
             var panelButtons = new TableLayoutPanel();
             panelButtons.RowCount = 3;
             panelButtons.ColumnCount = 3;
             panelButtons.Dock = DockStyle.Fill;
-            panelButtons.Padding = new Padding(20);
             panelButtons.AutoSize = false;
             panelButtons.GrowStyle = TableLayoutPanelGrowStyle.FixedSize;
-            panelButtons.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33F));
-            panelButtons.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33F));
-            panelButtons.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33F));
-            panelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
-            panelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
-            panelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
             panelButtons.BackColor = Color.Transparent;
 
-            // Create Buttons with consistent styling
-            btnTambahBarang = CreateButton("1. Tambah Barang", BtnTambahBarang_Click);
-            btnEditBarang = CreateButton("2. Edit Barang", BtnEditBarang_Click);
-            btnHapusBarang = CreateButton("3. Hapus Barang", BtnHapusBarang_Click);
-            btnCariBarang = CreateButton("4. Cari Barang", BtnCariBarang_Click);
-            btnTampilkanBarang = CreateButton("5. Tampilkan Semua Barang", BtnTampilkanBarang_Click);
-            btnTransaksiMasuk = CreateButton("6. Transaksi Barang Masuk", BtnTransaksiMasuk_Click);
-            btnTransaksiKeluar = CreateButton("7. Transaksi Barang Keluar", BtnTransaksiKeluar_Click);
-            btnRiwayatTransaksi = CreateButton("8. Riwayat Transaksi", BtnRiwayatTransaksi_Click);
-            btnLaporanInventaris = CreateButton("9. Laporan Inventaris", BtnLaporanInventaris_Click);
+            for (int i = 0; i < 3; i++)
+            {
+                panelButtons.RowStyles.Add(new RowStyle(SizeType.Percent, 33.33F));
+                panelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
+            }
 
-            // Add buttons to panel in order (3 columns x 3 rows)
+            btnTambahBarang = CreateModernButton("➕ Tambah\nBarang", secondaryColor, BtnTambahBarang_Click);
+            btnEditBarang = CreateModernButton("✏️ Edit\nBarang", primaryColor, BtnEditBarang_Click);
+            btnHapusBarang = CreateModernButton("🗑️ Hapus\nBarang", accentColor, BtnHapusBarang_Click);
+            btnCariBarang = CreateModernButton("🔍 Cari\nBarang", infoColor, BtnCariBarang_Click);
+            btnTampilkanBarang = CreateModernButton("📋 Tampilkan\nSemua", Color.FromArgb(108, 117, 125), BtnTampilkanBarang_Click);
+            btnTransaksiMasuk = CreateModernButton("📥 Transaksi\nMasuk", secondaryColor, BtnTransaksiMasuk_Click);
+            btnTransaksiKeluar = CreateModernButton("📤 Transaksi\nKeluar", warningColor, BtnTransaksiKeluar_Click);
+            btnRiwayatTransaksi = CreateModernButton("📊 Riwayat\nTransaksi", Color.FromArgb(111, 66, 193), BtnRiwayatTransaksi_Click);
+            btnLaporanInventaris = CreateModernButton("📈 Laporan\nInventaris", Color.FromArgb(220, 53, 69), BtnLaporanInventaris_Click);
+
             panelButtons.Controls.Add(btnTambahBarang, 0, 0);
             panelButtons.Controls.Add(btnEditBarang, 1, 0);
             panelButtons.Controls.Add(btnHapusBarang, 2, 0);
@@ -90,24 +132,30 @@ namespace GUI
             panelButtons.Controls.Add(btnRiwayatTransaksi, 1, 2);
             panelButtons.Controls.Add(btnLaporanInventaris, 2, 2);
 
-            // Add controls to form
-            this.Controls.Add(panelButtons);
-            this.Controls.Add(lblTitle);
+            contentPanel.Controls.Add(panelButtons);
+
+            this.Controls.Add(contentPanel);
+            this.Controls.Add(headerPanel);
         }
 
-        private Button CreateButton(string text, EventHandler onClick)
+        private Button CreateModernButton(string text, Color backgroundColor, EventHandler onClick)
         {
-            var btn = new Button();
+            var btn = new CustomButton();
             btn.Text = text;
-            btn.Font = new Font("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point);
+            btn.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            btn.BackColor = backgroundColor;
+            btn.ForeColor = Color.White;
+            btn.FlatStyle = FlatStyle.Flat;
+            btn.FlatAppearance.BorderSize = 0;
+            btn.FlatAppearance.MouseOverBackColor = ControlPaint.Light(backgroundColor, 0.2f);
+            btn.FlatAppearance.MouseDownBackColor = ControlPaint.Dark(backgroundColor, 0.1f);
             btn.Dock = DockStyle.Fill;
-            btn.Margin = new Padding(10);
-            btn.Height = 60;
+            btn.Margin = new Padding(8);
+            btn.Cursor = Cursors.Hand;
             btn.Click += onClick;
+
             return btn;
         }
-
-        // Event Handlers for buttons
 
         private void BtnTambahBarang_Click(object sender, EventArgs e)
         {
@@ -163,5 +211,24 @@ namespace GUI
             form.ShowDialog();
         }
     }
-}
 
+    public class CustomButton : Button
+    {
+        protected override void OnPaint(PaintEventArgs pevent)
+        {
+            GraphicsPath grPath = new GraphicsPath();
+            Rectangle rect = new Rectangle(0, 0, this.Width - 1, this.Height - 1);
+            int radius = 15;
+
+            grPath.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+            grPath.AddArc(rect.X + rect.Width - radius, rect.Y, radius, radius, 270, 90);
+            grPath.AddArc(rect.X + rect.Width - radius, rect.Y + rect.Height - radius, radius, radius, 0, 90);
+            grPath.AddArc(rect.X, rect.Y + rect.Height - radius, radius, radius, 90, 90);
+            grPath.CloseAllFigures();
+
+            this.Region = new System.Drawing.Region(grPath);
+
+            base.OnPaint(pevent);
+        }
+    }
+}
