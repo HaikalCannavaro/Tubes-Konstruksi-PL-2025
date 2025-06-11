@@ -39,6 +39,7 @@ Tersedia **10 menu** yang memungkinkan pengguna mengakses fungsi berikut secara 
 | `.NET` | Framework aplikasi |
 | `JSON` | Format pertukaran data |
 | `Swagger` | Dokumentasi & uji coba API |
+| `Windows Froms App` | GUI InvenAppp |
 
 ---
 
