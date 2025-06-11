@@ -69,6 +69,8 @@ namespace AplikasiInventarisToko.Managers
             Console.ReadKey();
         }
 
+
+
         public static async Task CariBarang()
         {
             Console.Clear();

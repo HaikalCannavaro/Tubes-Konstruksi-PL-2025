@@ -1,4 +1,6 @@
-﻿using System;
+﻿using AplikasiInventarisToko.GUI;
+using GUI;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -108,7 +110,7 @@ namespace InventoryManagementApp
                 ForeColor = Color.FromArgb(37, 99, 235),
                 AutoSize = true,
                 Dock = DockStyle.Left,
-                TextAlign = ContentAlignment.MiddleLeft,
+                TextAlign = ContentAlignment.TopLeft,
                 Padding = new Padding(0, 15, 0, 15),
             };
             topNavPanel.Controls.Add(logoLabel);
@@ -131,10 +133,10 @@ namespace InventoryManagementApp
         {
             sidebarPanel = new Panel()
             {
-                BackColor = Color.White,
+                BackColor = Color.FromArgb(229, 239, 255),
                 Width = 300,
                 Dock = DockStyle.Left,
-                Padding = new Padding(0, 20, 0, 20),
+                Padding = new Padding(0, 30, 0, 30),
             };
 
             sidebarPanel.Paint += (s, e) =>
@@ -155,38 +157,41 @@ namespace InventoryManagementApp
                 ForeColor = Color.FromArgb(55, 65, 81),
                 Height = 40,
                 Dock = DockStyle.Top,
-                TextAlign = ContentAlignment.BottomLeft,
+                TextAlign = ContentAlignment.TopLeft,
                 Padding = new Padding(20, 0, 20, 10),
             };
             sidebarPanel.Controls.Add(sidebarHeader);
 
-            // Features Container
-            var featuresContainer = new Panel()
+            // Features Container menggunakan FlowLayoutPanel
+            var featuresContainer = new FlowLayoutPanel()
             {
                 Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.TopDown,
                 AutoScroll = true,
-                Padding = new Padding(10, 10, 10, 10),
-                BackColor = Color.White, // Make background visible for debugging
+                WrapContents = false,
+                Padding = new Padding(10, 20, 10, 10), 
+                BackColor = Color.FromArgb(229, 239, 255),
             };
             sidebarPanel.Controls.Add(featuresContainer);
 
-            // Create feature buttons
+            // Spacer awal untuk memberi jarak dari header
+            var spacer = new Panel()
+            {
+                Height = 30,
+                Width = 1
+            };
+            featuresContainer.Controls.Add(spacer);
+
+            // Buat tombol-tombol fitur
             featureButtons = new Button[featureNames.Length];
             for (int i = 0; i < featureNames.Length; i++)
             {
                 var button = CreateFeatureButton(featureNames[i], featureIcons[i], i);
-                button.Top = i * 55;
-                button.Left = 0; // Ensure proper positioning
-                featuresContainer.Controls.Add(button);
                 featureButtons[i] = button;
-
-                // Debug: Show that all features are being created
-                System.Diagnostics.Debug.WriteLine($"Created button {i}: {featureNames[i]}");
+                featuresContainer.Controls.Add(button);
             }
-
-            // Set the container's AutoScrollMinSize to ensure all buttons are accessible
-            featuresContainer.AutoScrollMinSize = new Size(0, featureNames.Length * 55 + 20);
         }
+
 
         private Button CreateFeatureButton(string title, string icon, int index)
         {
@@ -206,27 +211,33 @@ namespace InventoryManagementApp
             };
 
             button.FlatAppearance.BorderSize = 0;
-            button.FlatAppearance.MouseOverBackColor = Color.FromArgb(243, 244, 246);
-            button.FlatAppearance.MouseDownBackColor = Color.FromArgb(229, 231, 235);
+            button.FlatAppearance.MouseOverBackColor = Color.FromArgb(37, 99, 235); // gunakan manual di MouseEnter
+            button.FlatAppearance.MouseDownBackColor = Color.Transparent;
 
             button.Click += FeatureButton_Click;
+
             button.MouseEnter += (s, e) =>
             {
                 if (button != activeButton)
                 {
-                    button.BackColor = Color.FromArgb(243, 244, 246);
+                    
+                    button.BackColor = Color.FromArgb(243, 244, 246);  // Hover bg
+                    button.ForeColor = Color.FromArgb(17, 24, 39);     // Hover text
                 }
             };
+
             button.MouseLeave += (s, e) =>
             {
                 if (button != activeButton)
                 {
                     button.BackColor = Color.Transparent;
+                    button.ForeColor = Color.FromArgb(75, 85, 99);    // Reset text color
                 }
             };
 
             return button;
         }
+
 
         private void CreateMainContent()
         {
@@ -370,14 +381,18 @@ namespace InventoryManagementApp
         {
             mainContentPanel.Controls.Clear();
 
-            currentFeaturePanel = new Panel()
+            currentFeaturePanel = new FlowLayoutPanel()
             {
                 Dock = DockStyle.Fill,
                 BackColor = Color.White,
+                FlowDirection = FlowDirection.TopDown,
+                AutoScroll = true,
+                WrapContents = false,
                 Padding = new Padding(40),
-                Margin = new Padding(10), // Add margin for separation
+                Margin = new Padding(10),
             };
 
+            // Tambahkan garis border
             currentFeaturePanel.Paint += (s, e) =>
             {
                 var rect = new Rectangle(0, 0, currentFeaturePanel.Width - 1, currentFeaturePanel.Height - 1);
@@ -396,29 +411,29 @@ namespace InventoryManagementApp
                 Font = new Font("Segoe UI", 32F, FontStyle.Bold, GraphicsUnit.Point),
                 ForeColor = Color.FromArgb(17, 24, 39),
                 AutoSize = true,
-                Location = new Point(0, 20),
+                Margin = new Padding(0, 10, 0, 10),
             };
             currentFeaturePanel.Controls.Add(featureTitle);
 
             // Feature Description
-            string description = GetFeatureDescription(featureIndex);
             var featureDesc = new Label()
             {
-                Text = description,
+                Text = GetFeatureDescription(featureIndex),
                 Font = new Font("Segoe UI", 14F, FontStyle.Regular, GraphicsUnit.Point),
                 ForeColor = Color.FromArgb(107, 114, 128),
                 MaximumSize = new Size(800, 0),
                 AutoSize = true,
-                Location = new Point(0, 80),
+                Margin = new Padding(0, 0, 0, 20),
             };
             currentFeaturePanel.Controls.Add(featureDesc);
 
             // Action Buttons
             CreateActionButtons(featureIndex);
 
-            // Add specific content based on feature
+            // Feature Specific Content
             CreateFeatureSpecificContent(featureIndex);
         }
+
 
         private void CreateActionButtons(int featureIndex)
         {
@@ -506,7 +521,8 @@ namespace InventoryManagementApp
             switch (featureIndex)
             {
                 case 0: // Tambah Barang
-                    message = "Form untuk menambah barang baru akan ditampilkan di sini.\n\nFitur yang akan tersedia:\n- Input nama barang\n- Pilih kategori\n- Set harga\n- Tentukan stok awal";
+                    var tambahForm = new FormTambahBarang();
+                    tambahForm.ShowDialog();
                     break;
                 case 1: // Edit Barang
                     message = "Form untuk mengedit barang akan ditampilkan di sini.";
@@ -517,12 +533,19 @@ namespace InventoryManagementApp
                 case 3: // Cari Barang
                     message = "Form pencarian barang akan ditampilkan di sini.";
                     break;
+                case 4: //Tampilan Barang
+                    var tampilkanForm = new FormTampilkanBarang();
+                    tampilkanForm.ShowDialog();
+                    break;
                 default:
                     message = $"Fungsi {featureNames[featureIndex]} akan diimplementasikan di sini.";
                     break;
             }
 
-            MessageBox.Show(message, $"Info - {featureNames[featureIndex]}", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (!string.IsNullOrWhiteSpace(message))
+            {
+                MessageBox.Show(message, $"Info - {featureNames[featureIndex]}", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         private string GetFeatureDescription(int index)
