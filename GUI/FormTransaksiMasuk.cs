@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Linq;
 using AplikasiInventarisToko.Models;
 
 namespace GUI
@@ -17,6 +18,13 @@ namespace GUI
         {
             InitializeComponent();
             SetupColumns();
+            InitializeComboBox();
+        }
+
+        private void InitializeComboBox()
+        {
+            // Set default selection untuk ComboBox
+            cbJenisInput.SelectedIndex = 0; // Default ke "ID"
         }
 
         protected override async void OnLoad(EventArgs e)
@@ -99,21 +107,21 @@ namespace GUI
 
                 if (daftarBarang == null || daftarBarang.Count == 0)
                 {
-                    lblHasil.Text = "Hasil Data: Belum ada data transaksi masuk";
+                    lblHasil.Text = "Hasil Data: Belum ada data barang";
                     lblHasil.ForeColor = Color.Orange;
                     dgvTransaksiMasuk.Rows.Clear();
                     return;
                 }
 
                 PopulateDataGridView(daftarBarang);
-                lblHasil.Text = $"Hasil Data: {daftarBarang.Count} transaksi masuk ditemukan";
+                lblHasil.Text = $"Hasil Data: {daftarBarang.Count} barang ditemukan";
                 lblHasil.ForeColor = Color.FromArgb(40, 167, 69);
             }
             catch (Exception ex)
             {
                 lblHasil.Text = "Hasil Data: Error memuat data";
                 lblHasil.ForeColor = Color.Red;
-                MessageBox.Show($"Gagal memuat data transaksi masuk:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Gagal memuat data barang:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -147,68 +155,142 @@ namespace GUI
 
         private async void btnTambahStok_Click(object sender, EventArgs e)
         {
-            var cbJenisInput = Controls.Find("cbJenisInput", true).FirstOrDefault() as ComboBox;
-            var txtInput = Controls.Find("txtInput", true).FirstOrDefault() as TextBox;
-            var numJumlah = Controls.Find("numJumlah", true).FirstOrDefault() as NumericUpDown;
-            var txtKeterangan = Controls.Find("txtKeterangan", true).FirstOrDefault() as TextBox;
-
-            if (cbJenisInput == null || txtInput == null || numJumlah == null || txtKeterangan == null)
-                return;
-
-            string input = txtInput.Text.Trim();
-            int jumlahMasuk = (int)numJumlah.Value;
-
-            if (string.IsNullOrEmpty(input))
+            try
             {
-                MessageBox.Show("Input tidak boleh kosong.");
-                return;
+                // Validasi input
+                if (cbJenisInput.SelectedItem == null)
+                {
+                    MessageBox.Show("Silakan pilih jenis input (ID atau Nama).", "Validasi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                string input = txtInput.Text.Trim();
+                int jumlahMasuk = (int)numJumlah.Value;
+                string keterangan = txtKeterangan.Text.Trim();
+
+                if (string.IsNullOrEmpty(input))
+                {
+                    MessageBox.Show("Input ID atau Nama barang tidak boleh kosong.", "Validasi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtInput.Focus();
+                    return;
+                }
+
+                if (jumlahMasuk <= 0)
+                {
+                    MessageBox.Show("Jumlah barang masuk harus lebih dari 0.", "Validasi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    numJumlah.Focus();
+                    return;
+                }
+
+                // Loading state
+                btnTambahStok.Enabled = false;
+                btnTambahStok.Text = "Memproses...";
+
+                using var client = new HttpClient(new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+                })
+                {
+                    BaseAddress = new Uri("https://localhost:7123")
+                };
+
+                // Ambil data barang terbaru
+                var barangList = await client.GetFromJsonAsync<List<Barang>>("/api/Barang");
+                if (barangList == null || barangList.Count == 0)
+                {
+                    MessageBox.Show("Tidak ada data barang yang tersedia.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Cari barang berdasarkan input
+                Barang barangDitemukan = null;
+                string jenisInput = cbJenisInput.SelectedItem.ToString();
+
+                if (jenisInput == "ID")
+                {
+                    barangDitemukan = barangList.FirstOrDefault(b => b.Id.Equals(input, StringComparison.OrdinalIgnoreCase));
+                }
+                else if (jenisInput == "Nama")
+                {
+                    barangDitemukan = barangList.FirstOrDefault(b => b.Nama.Equals(input, StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (barangDitemukan == null)
+                {
+                    MessageBox.Show($"Barang dengan {jenisInput} '{input}' tidak ditemukan.\nPastikan {jenisInput} yang dimasukkan sudah benar.",
+                        "Barang Tidak Ditemukan", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtInput.Focus();
+                    return;
+                }
+
+                // Buat objek transaksi
+                var transaksiBaru = new Transaksi
+                {
+                    BarangId = barangDitemukan.Id,
+                    Jenis = "Masuk",
+                    Jumlah = jumlahMasuk,
+                    Keterangan = string.IsNullOrEmpty(keterangan) ? $"Penambahan stok {barangDitemukan.Nama}" : keterangan,
+                    Tanggal = DateTime.Now
+                };
+
+                // Kirim transaksi ke server - coba endpoint /masuk dulu, jika gagal coba endpoint biasa
+                HttpResponseMessage response;
+                try
+                {
+                    // Coba endpoint khusus masuk seperti di ModulTransaksi
+                    response = await client.PostAsJsonAsync("/api/Transaksi/masuk", transaksiBaru);
+                }
+                catch
+                {
+                    // Jika gagal, coba endpoint biasa
+                    response = await client.PostAsJsonAsync("/api/Transaksi", transaksiBaru);
+                }
+
+                if (response.IsSuccessStatusCode)
+                {
+                    MessageBox.Show($"Transaksi masuk berhasil!\n\nDetail:\n" +
+                        $"- Barang: {barangDitemukan.Nama}\n" +
+                        $"- Jumlah Masuk: {jumlahMasuk}\n" +
+                        $"- Keterangan: {transaksiBaru.Keterangan}",
+                        "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    // Reset form
+                    txtInput.Clear();
+                    numJumlah.Value = 1;
+                    txtKeterangan.Clear();
+                    cbJenisInput.SelectedIndex = 0;
+
+                    // Refresh data
+                    await LoadDataTransaksiMasuk();
+                }
+                else
+                {
+                    string errorMessage = await response.Content.ReadAsStringAsync();
+                    MessageBox.Show($"Gagal melakukan transaksi masuk.\n\nError: {errorMessage}",
+                        "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
-
-            using var client = new HttpClient(new HttpClientHandler { ServerCertificateCustomValidationCallback = (_, _, _, _) => true })
+            catch (HttpRequestException httpEx)
             {
-                BaseAddress = new Uri("https://localhost:7123")
-            };
-
-            var barangList = await client.GetFromJsonAsync<List<Barang>>("/api/Barang");
-            if (barangList == null) return;
-
-            Barang barang = null;
-            if (cbJenisInput.SelectedItem?.ToString() == "ID")
-                barang = barangList.FirstOrDefault(b => b.Id == input);
-            else
-                barang = barangList.FirstOrDefault(b => b.Nama.Equals(input, StringComparison.OrdinalIgnoreCase));
-
-            if (barang == null)
-            {
-                MessageBox.Show("Barang tidak ditemukan.");
-                return;
+                MessageBox.Show($"Gagal terhubung ke server:\n{httpEx.Message}\n\nPastikan server API sudah berjalan.",
+                    "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            var transaksiBaru = new Transaksi
+            catch (Exception ex)
             {
-                BarangId = barang.Id,
-                Jenis = "Masuk",
-                Jumlah = jumlahMasuk,
-                Keterangan = txtKeterangan.Text,
-                Tanggal = DateTime.Now
-            };
-
-            var response = await client.PostAsJsonAsync("/api/Transaksi", transaksiBaru);
-
-            if (response.IsSuccessStatusCode)
-            {
-                MessageBox.Show("Transaksi masuk berhasil.");
-                await LoadDataTransaksiMasuk();
+                MessageBox.Show($"Terjadi kesalahan:\n{ex.Message}",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            else
+            finally
             {
-                MessageBox.Show("Gagal melakukan transaksi masuk.");
+                // Kembalikan state button
+                btnTambahStok.Enabled = true;
+                btnTambahStok.Text = "Tambah Stok";
             }
         }
 
         private void FormTransaksiMasuk_Load(object sender, EventArgs e)
         {
-
+            // Event handler untuk form load
         }
     }
 }
