@@ -40,7 +40,7 @@
             dataGridViewBarang.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridViewBarang.Location = new Point(97, 12);
             dataGridViewBarang.Name = "dataGridViewBarang";
-            dataGridViewBarang.RowHeadersWidth = 51;
+            dataGridViewBarang.RowHeadersWidth = 61;
             dataGridViewBarang.Size = new Size(934, 472);
             dataGridViewBarang.TabIndex = 0;
             // 

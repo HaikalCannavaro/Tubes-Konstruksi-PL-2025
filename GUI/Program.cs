@@ -393,63 +393,54 @@ namespace GUI
         {
             FormTambahBarang formTambah = new FormTambahBarang();
             formTambah.ShowDialog();
-            MessageBox.Show("Form Tambah Barang akan dibuka", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void BtnEditBarang_Click(object sender, EventArgs e)
         {
             FormEditBarang form = new FormEditBarang();
             form.ShowDialog();
-            MessageBox.Show("Form Edit Barang akan dibuka", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void BtnHapusBarang_Click(object sender, EventArgs e)
         {
             FormHapusBarang form = new FormHapusBarang();
             form.ShowDialog();
-            MessageBox.Show("Form Hapus Barang akan dibuka", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void BtnCariBarang_Click(object sender, EventArgs e)
         {
             FormCariBarang form = new FormCariBarang();
             form.ShowDialog();
-            MessageBox.Show("Form Cari Barang akan dibuka", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void BtnTampilkanBarang_Click(object sender, EventArgs e)
         {
             FormTampilkanBarang formTampilkan = new FormTampilkanBarang();
             formTampilkan.ShowDialog();
-            MessageBox.Show("Form Tampilkan Barang akan dibuka", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void BtnTransaksiMasuk_Click(object sender, EventArgs e)
         {
             FormTransaksiMasuk form = new FormTransaksiMasuk();
             form.ShowDialog();
-            MessageBox.Show("Form Transaksi Masuk akan dibuka", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void BtnTransaksiKeluar_Click(object sender, EventArgs e)
         {
             FormTransaksiKeluar form = new FormTransaksiKeluar();
             form.ShowDialog();
-            MessageBox.Show("Form Transaksi Keluar akan dibuka", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void BtnRiwayatTransaksi_Click(object sender, EventArgs e)
         {
             FormRiwayatTransaksi form = new FormRiwayatTransaksi();
             form.ShowDialog();
-            MessageBox.Show("Form Riwayat Transaksi akan dibuka", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void BtnLaporanInventaris_Click(object sender, EventArgs e)
         {
             FormLaporanInventaris form = new FormLaporanInventaris();
             form.ShowDialog();
-            MessageBox.Show("Form Laporan Inventaris akan dibuka", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)
