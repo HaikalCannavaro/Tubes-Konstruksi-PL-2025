@@ -63,6 +63,11 @@ namespace AplikasiInventarisToko.GUI
         {
             this.Close();
         }
+
+        private void FormTambahBarang_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }
 

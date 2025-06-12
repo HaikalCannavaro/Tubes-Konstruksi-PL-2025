@@ -191,6 +191,7 @@ namespace AplikasiInventarisToko.GUI
             Controls.Add(labelJudulForm);
             Name = "FormTambahBarang";
             Text = "FormTambahBarang";
+            Load += FormTambahBarang_Load;
             ResumeLayout(false);
             PerformLayout();
         }
