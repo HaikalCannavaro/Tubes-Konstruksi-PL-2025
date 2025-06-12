@@ -129,6 +129,7 @@ namespace AplikasiInventarisToko.GUI
             dataGridViewHasil.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewHasil.Size = new Size(755, 350);
             dataGridViewHasil.TabIndex = 9;
+            dataGridViewHasil.CellContentClick += dataGridViewHasil_CellContentClick;
             // 
             // labelHasil
             // 

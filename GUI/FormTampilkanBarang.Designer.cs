@@ -43,6 +43,7 @@
             dataGridViewBarang.RowHeadersWidth = 51;
             dataGridViewBarang.Size = new Size(934, 472);
             dataGridViewBarang.TabIndex = 0;
+            dataGridViewBarang.CellContentClick += dataGridViewBarang_CellContentClick;
             // 
             // buttonKembali
             // 
