@@ -10,7 +10,6 @@
         /// <summary>
         /// Clean up any resources being used.
         /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -23,69 +22,67 @@
         #region Windows Form Designer generated code
 
         /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
+        /// Required method for Designer support.
         /// </summary>
         private void InitializeComponent()
         {
-            button1 = new Button();
-            dataGridView1 = new DataGridView();
-            label1 = new Label();
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
-            SuspendLayout();
+            this.dgvInventaris = new System.Windows.Forms.DataGridView();
+            this.btnMuatData = new System.Windows.Forms.Button();
+            this.btnExportCSV = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvInventaris)).BeginInit();
+            this.SuspendLayout();
             // 
-            // button1
+            // dgvInventaris
             // 
-            button1.BackColor = Color.FromArgb(128, 255, 128);
-            button1.Location = new Point(420, 97);
-            button1.Name = "button1";
-            button1.Size = new Size(144, 29);
-            button1.TabIndex = 0;
-            button1.Text = "lihat hasil laporan";
-            button1.UseVisualStyleBackColor = false;
-            button1.Click += button1_Click;
+            this.dgvInventaris.AllowUserToAddRows = false;
+            this.dgvInventaris.AllowUserToDeleteRows = false;
+            this.dgvInventaris.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvInventaris.Location = new System.Drawing.Point(12, 70);
+            this.dgvInventaris.Name = "dgvInventaris";
+            this.dgvInventaris.ReadOnly = true;
+            this.dgvInventaris.RowTemplate.Height = 24;
+            this.dgvInventaris.Size = new System.Drawing.Size(760, 370);
+            this.dgvInventaris.TabIndex = 0;
             // 
-            // dataGridView1
+            // btnMuatData
             // 
-            dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView1.Location = new Point(39, 148);
-            dataGridView1.Name = "dataGridView1";
-            dataGridView1.RowHeadersWidth = 51;
-            dataGridView1.Size = new Size(974, 394);
-            dataGridView1.TabIndex = 1;
-            dataGridView1.CellContentClick += dataGridView1_CellContentClick;
+            this.btnMuatData.Location = new System.Drawing.Point(12, 20);
+            this.btnMuatData.Name = "btnMuatData";
+            this.btnMuatData.Size = new System.Drawing.Size(120, 30);
+            this.btnMuatData.TabIndex = 1;
+            this.btnMuatData.Text = "Muat Data";
+            this.btnMuatData.UseVisualStyleBackColor = true;
+            this.btnMuatData.Click += new System.EventHandler(this.btnMuatData_Click);
             // 
-            // label1
+            // btnExportCSV
             // 
-            label1.AutoSize = true;
-            label1.FlatStyle = FlatStyle.Popup;
-            label1.Font = new Font("Segoe UI Historic", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label1.Location = new Point(394, 30);
-            label1.Name = "label1";
-            label1.Size = new Size(201, 31);
-            label1.TabIndex = 2;
-            label1.Text = "laporan invetaris";
+            this.btnExportCSV.Location = new System.Drawing.Point(150, 20);
+            this.btnExportCSV.Name = "btnExportCSV";
+            this.btnExportCSV.Size = new System.Drawing.Size(140, 30);
+            this.btnExportCSV.TabIndex = 2;
+            this.btnExportCSV.Text = "Export ke CSV";
+            this.btnExportCSV.UseVisualStyleBackColor = true;
+            this.btnExportCSV.Click += new System.EventHandler(this.btnExportCSV_Click);
             // 
             // FormLaporanInventaris
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
-            AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.White;
-            ClientSize = new Size(1074, 604);
-            Controls.Add(label1);
-            Controls.Add(dataGridView1);
-            Controls.Add(button1);
-            Name = "FormLaporanInventaris";
-            Text = "FormLaporanInventaris";
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
-            ResumeLayout(false);
-            PerformLayout();
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(784, 461);
+            this.Controls.Add(this.btnExportCSV);
+            this.Controls.Add(this.btnMuatData);
+            this.Controls.Add(this.dgvInventaris);
+            this.Name = "FormLaporanInventaris";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "Laporan Inventaris Barang";
+            ((System.ComponentModel.ISupportInitialize)(this.dgvInventaris)).EndInit();
+            this.ResumeLayout(false);
         }
 
         #endregion
 
-        private Button button1;
-        private DataGridView dataGridView1;
-        private Label label1;
+        private System.Windows.Forms.DataGridView dgvInventaris;
+        private System.Windows.Forms.Button btnMuatData;
+        private System.Windows.Forms.Button btnExportCSV;
     }
 }
