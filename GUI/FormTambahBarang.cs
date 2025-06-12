@@ -22,24 +22,39 @@ namespace AplikasiInventarisToko.GUI
         {
             try
             {
+                // Validasi input sebelum parsing
+                if (!int.TryParse(textBoxStokAwal.Text, out int stok))
+                {
+                    MessageBox.Show("Stok harus berupa angka bulat.", "Validasi Gagal", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (!decimal.TryParse(textBoxHargaBeli.Text, out decimal hargaBeli))
+                {
+                    MessageBox.Show("Harga beli harus berupa angka desimal.", "Validasi Gagal", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (!decimal.TryParse(textBoxHargaJual.Text, out decimal hargaJual))
+                {
+                    MessageBox.Show("Harga jual harus berupa angka desimal.", "Validasi Gagal", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 var barang = new
                 {
                     Nama = textBoxNamaBarang.Text,
                     Kategori = textBoxKategori.Text,
-                    Stok = int.Parse(textBoxStokAwal.Text),
-                    HargaBeli = decimal.Parse(textBoxHargaBeli.Text),
-                    HargaJual = decimal.Parse(textBoxHargaJual.Text),
+                    Stok = stok,
+                    HargaBeli = hargaBeli,
+                    HargaJual = hargaJual,
                     Supplier = textBoxSupplier.Text,
-                    StokAwal = int.Parse(textBoxStokAwal.Text)
+                    StokAwal = stok
                 };
 
-                var handler = new HttpClientHandler
-                {
-                    ServerCertificateCustomValidationCallback = (sender2, cert, chain, sslPolicyErrors) => true
-                };
-
-                using var client = new HttpClient(handler);
-                client.BaseAddress = new Uri("https://localhost:7123");
+                // Menggunakan HttpClient tanpa menonaktifkan validasi SSL
+                using var client = new HttpClient();
+                client.BaseAddress = new Uri("https://localhost:7123"); 
 
                 var response = await client.PostAsJsonAsync("/api/Barang", barang);
                 if (response.IsSuccessStatusCode)
@@ -55,9 +70,10 @@ namespace AplikasiInventarisToko.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message, "Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Terjadi kesalahan: " + ex.Message, "Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
 
         private void btnBatal_Click(object sender, EventArgs e)
         {
