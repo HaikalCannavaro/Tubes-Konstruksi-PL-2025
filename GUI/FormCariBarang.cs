@@ -280,5 +280,10 @@ namespace AplikasiInventarisToko.GUI
             }
             base.Dispose(disposing);
         }
+
+        private void dataGridViewHasil_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
     }
 }

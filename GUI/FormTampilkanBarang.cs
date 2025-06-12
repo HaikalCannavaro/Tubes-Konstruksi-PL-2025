@@ -39,7 +39,7 @@ namespace GUI
 
         private async void FormTampilkanBarang_Load(object sender, EventArgs e)
         {
-            AturUkuranDataGridView(); 
+            AturUkuranDataGridView();
 
             try
             {
@@ -73,6 +73,11 @@ namespace GUI
         private void buttonKembali_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void dataGridViewBarang_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
         }
     }
 }
