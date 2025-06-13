@@ -1,70 +1,61 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace AplikasiInventarisToko.Utils
 {
     public static class ValidasiInput
     {
-        private static readonly Dictionary<string, Func<string, object>> _validatorTable;
-
-        static ValidasiInput()
+        private const int MAX_LENGTH = 100;
+        private static readonly HashSet<string> SuspiciousPatterns = new()
         {
-            _validatorTable = new Dictionary<string, Func<string, object>>(StringComparer.OrdinalIgnoreCase)
-            {
-                { "int", ValidasiAngkaInternal },
-                { "decimal", ValidasiDecimalInternal },
-                { "datetime", ValidasiTanggalInternal }
-            };
-        }
+            "script", "select", "insert", "delete", "drop", "exec", "union", "or 1=1"
+        };
 
         public static int ValidasiAngka(string input)
         {
-            return (int)Validasi("int", input);
+            ValidateInput(input);
+
+            if (!int.TryParse(input.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int result))
+                throw new FormatException("Input harus angka bulat yang valid");
+
+            return result;
         }
 
         public static decimal ValidasiDecimal(string input)
         {
-            return (decimal)Validasi("decimal", input);
+            ValidateInput(input);
+
+            if (!decimal.TryParse(input.Trim(), NumberStyles.Number, CultureInfo.InvariantCulture, out decimal result))
+                throw new FormatException("Input harus angka desimal yang valid");
+
+            return result;
         }
 
         public static DateTime ValidasiTanggal(string input)
         {
-            return (DateTime)Validasi("datetime", input);
+            ValidateInput(input);
+
+            if (!DateTime.TryParseExact(input.Trim(), "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime result))
+                throw new FormatException("Format tanggal tidak valid. Gunakan DD/MM/YYYY");
+
+            return result;
         }
 
-        private static object Validasi(string tipe, string input)
+        private static void ValidateInput(string input)
         {
-            if (string.IsNullOrEmpty(input))
+            if (string.IsNullOrWhiteSpace(input))
                 throw new ArgumentException("Input tidak boleh kosong");
 
-            if (!_validatorTable.ContainsKey(tipe))
-                throw new ArgumentException($"Tipe validasi '{tipe}' tidak didukung");
+            if (input.Length > MAX_LENGTH)
+                throw new ArgumentException($"Input terlalu panjang (maksimal {MAX_LENGTH} karakter)");
 
-            return _validatorTable[tipe](input);
-        }
-
-        private static object ValidasiAngkaInternal(string input)
-        {
-            if (!int.TryParse(input, out int hasil))
-                throw new FormatException("Input harus berupa angka bulat");
-
-            return hasil;
-        }
-
-        private static object ValidasiDecimalInternal(string input)
-        {
-            if (!decimal.TryParse(input, out decimal hasil))
-                throw new FormatException("Input harus berupa angka desimal");
-
-            return hasil;
-        }
-
-        private static object ValidasiTanggalInternal(string input)
-        {
-            if (!DateTime.TryParse(input, out DateTime hasil))
-                throw new FormatException("Format tanggal tidak valid. Gunakan format DD/MM/YYYY");
-
-            return hasil;
+            var lowerInput = input.ToLowerInvariant();
+            foreach (var pattern in SuspiciousPatterns)
+            {
+                if (lowerInput.Contains(pattern))
+                    throw new ArgumentException("Input mengandung karakter tidak diizinkan");
+            }
         }
     }
 }
