@@ -16,8 +16,10 @@ namespace GUI
             InitializeComponent();
         }
 
+        /// Memuat dan menampilkan riwayat transaksi dari API ke DataGridView
         private async void buttonMuatRiwayat_Click(object sender, EventArgs e)
         {
+            // Konfigurasi HTTP client handler untuk bypass SSL certificate validation
             var handler = new HttpClientHandler
             {
                 ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
@@ -28,6 +30,7 @@ namespace GUI
 
             try
             {
+                // Mengambil data transaksi dari API
                 var response = await client.GetAsync("/api/Transaksi");
                 if (!response.IsSuccessStatusCode)
                 {
@@ -42,15 +45,23 @@ namespace GUI
                     return;
                 }
 
+                // Mengambil data barang untuk mendapatkan nama barang berdasarkan ID
                 var barangResponse = await client.GetAsync("/api/Barang");
                 var daftarBarang = await barangResponse.Content.ReadFromJsonAsync<List<Barang>>() ?? new();
+
+                // Membuat dictionary untuk mapping ID barang ke nama barang (untuk performa lookup yang lebih cepat)
                 var barangDict = daftarBarang.ToDictionary(b => b.Id, b => b.Nama);
 
+                // Membuat binding list untuk data yang akan ditampilkan di DataGridView
                 var bindingList = new BindingList<dynamic>();
 
+                // Memproses setiap transaksi untuk ditampilkan dengan format yang user-friendly
                 foreach (var t in transaksiList)
                 {
+                    // Mendapatkan nama barang berdasarkan ID, dengan fallback jika tidak ditemukan
                     string namaBarang = barangDict.ContainsKey(t.BarangId) ? barangDict[t.BarangId] : "Tidak diketahui";
+
+                    // Membuat objek anonymous untuk ditampilkan di grid
                     bindingList.Add(new
                     {
                         ID = t.Id,
@@ -62,10 +73,11 @@ namespace GUI
                     });
                 }
 
+                // Konfigurasi DataGridView untuk menampilkan data
                 dataGridView1.DataSource = bindingList;
-                dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-                dataGridView1.ReadOnly = true;
-                dataGridView1.AllowUserToAddRows = false;
+                dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill; // Kolom menyesuaikan lebar grid
+                dataGridView1.ReadOnly = true; // Data hanya bisa dibaca, tidak bisa diedit
+                dataGridView1.AllowUserToAddRows = false; // Mencegah user menambah baris baru
             }
             catch (Exception ex)
             {
