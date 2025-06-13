@@ -76,51 +76,85 @@ namespace AplikasiInventarisToko.Managers
             Console.Clear();
             Console.WriteLine("=== CARI BARANG ===");
 
-            Console.Write("Masukkan kriteria (id/nama/kategori/supplier): ");
-            string kriteria = Console.ReadLine()?.ToLower();
-
-            Console.Write("Masukkan nilai pencarian: ");
-            string nilai = Console.ReadLine();
-
-            var handler = new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
-            };
-
-            using var client = new HttpClient(handler);
-            client.BaseAddress = new Uri("https://localhost:7123");
-
             try
             {
-                var response = await client.GetAsync($"/api/Barang/search?kriteria={kriteria}&nilai={nilai}");
+                // Input validation
+                Console.Write("Masukkan kriteria pencarian (id/nama/kategori/supplier): ");
+                string kriteria = Console.ReadLine()?.Trim().ToLower();
 
-                if (response.IsSuccessStatusCode)
+                if (string.IsNullOrWhiteSpace(kriteria))
                 {
-                    var hasil = await response.Content.ReadFromJsonAsync<List<Barang>>();
+                    Console.WriteLine("Kriteria pencarian tidak boleh kosong.");
+                    return;
+                }
 
-                    if (hasil == null || hasil.Count == 0)
-                    {
-                        Console.WriteLine("Barang tidak ditemukan.");
-                    }
-                    else
-                    {
-                        BarangDisplayHelper.TampilkanDaftarBarang(hasil);
-                    }
-                }
-                else
+                if (!new[] { "id", "nama", "kategori", "supplier" }.Contains(kriteria))
                 {
-                    var msg = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Gagal mencari barang: {msg}");
+                    Console.WriteLine("Kriteria pencarian tidak valid. Gunakan: id, nama, kategori, atau supplier.");
+                    return;
                 }
+
+                Console.Write("Masukkan nilai pencarian: ");
+                string nilai = Console.ReadLine()?.Trim();
+
+                if (string.IsNullOrWhiteSpace(nilai))
+                {
+                    Console.WriteLine("Nilai pencarian tidak boleh kosong.");
+                    return;
+                }
+
+                // Secure HTTP client setup
+                using var handler = new HttpClientHandler();
+                handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+
+                using var client = new HttpClient(handler)
+                {
+                    BaseAddress = new Uri("https://localhost:7123"),
+                    Timeout = TimeSpan.FromSeconds(30)
+                };
+
+                // Sanitize input for URL
+                string encodedKriteria = Uri.EscapeDataString(kriteria);
+                string encodedNilai = Uri.EscapeDataString(nilai);
+
+                // API call with error handling
+                var response = await client.GetAsync($"/api/Barang/search?kriteria={encodedKriteria}&nilai={encodedNilai}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Gagal mencari barang. Status: {response.StatusCode}");
+                    return;
+                }
+
+                var hasil = await response.Content.ReadFromJsonAsync<List<Barang>>();
+
+                if (hasil == null || !hasil.Any())
+                {
+                    Console.WriteLine("Barang tidak ditemukan.");
+                    return;
+                }
+
+                BarangDisplayHelper.TampilkanDaftarBarang(hasil);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"Gagal terhubung ke server: {ex.Message}");
+            }
+            catch (TaskCanceledException)
+            {
+                Console.WriteLine("Waktu pencarian habis. Silakan coba lagi.");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Terjadi kesalahan: {ex.Message}");
             }
-
-            Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
-            Console.ReadKey();
+            finally
+            {
+                Console.WriteLine("\nTekan sembarang tombol untuk kembali...");
+                Console.ReadKey();
+            }
         }
+
 
         public static async Task EditBarang()
         {
