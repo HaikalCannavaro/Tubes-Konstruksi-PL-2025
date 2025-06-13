@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using AplikasiInventarisToko.Helpers; 
+using AplikasiInventarisToko.Models; 
 
 namespace AplikasiInventarisToko.GUI
 {
-    partial class FormTambahBarang : Form
+    public partial class FormTambahBarang : Form
     {
         public FormTambahBarang()
         {
@@ -22,7 +19,6 @@ namespace AplikasiInventarisToko.GUI
         {
             try
             {
-                // Validasi input sebelum parsing
                 if (!int.TryParse(textBoxStokAwal.Text, out int stok))
                 {
                     MessageBox.Show("Stok harus berupa angka bulat.", "Validasi Gagal", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -41,22 +37,21 @@ namespace AplikasiInventarisToko.GUI
                     return;
                 }
 
-                var barang = new
-                {
-                    Nama = textBoxNamaBarang.Text,
-                    Kategori = textBoxKategori.Text,
-                    Stok = stok,
-                    HargaBeli = hargaBeli,
-                    HargaJual = hargaJual,
-                    Supplier = textBoxSupplier.Text,
-                    StokAwal = stok
-                };
+                // Gunakan Design Pattern Factory Method untuk membuat objek Barang
+                Barang barang = BarangFactory.Create(
+                    textBoxNamaBarang.Text,
+                    textBoxKategori.Text,
+                    stok,
+                    hargaBeli,
+                    hargaJual,
+                    textBoxSupplier.Text
+                );
 
-                // Menggunakan HttpClient tanpa menonaktifkan validasi SSL
                 using var client = new HttpClient();
-                client.BaseAddress = new Uri("https://localhost:7123"); 
+                client.BaseAddress = new Uri("https://localhost:7123");
 
                 var response = await client.PostAsJsonAsync("/api/Barang", barang);
+
                 if (response.IsSuccessStatusCode)
                 {
                     MessageBox.Show("Barang berhasil ditambahkan!", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -74,7 +69,6 @@ namespace AplikasiInventarisToko.GUI
             }
         }
 
-
         private void btnBatal_Click(object sender, EventArgs e)
         {
             this.Close();
@@ -86,4 +80,3 @@ namespace AplikasiInventarisToko.GUI
         }
     }
 }
-
