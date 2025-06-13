@@ -1,4 +1,5 @@
 ﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Net.Http;
@@ -24,7 +25,7 @@ namespace GUI
         private void InitializeComboBox()
         {
             // Set default selection untuk ComboBox
-            cbJenisInput.SelectedIndex = 0; // Default ke "ID"
+            cbJenisInput.SelectedIndex = 0;
         }
 
         protected override async void OnLoad(EventArgs e)
@@ -290,7 +291,7 @@ namespace GUI
 
         private void FormTransaksiMasuk_Load(object sender, EventArgs e)
         {
-            // Event handler untuk form load
+
         }
     }
 }

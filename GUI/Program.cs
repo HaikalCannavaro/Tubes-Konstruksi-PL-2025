@@ -361,7 +361,6 @@ namespace GUI
             {
                 sidebarPanel.Width = sidebarCollapsedWidth;
                 lblTitle.Text = "📦";
-                // mainPanel.Padding = new Padding(sidebarCollapsedWidth, 0, 0, 0); // Dihapus untuk menghilangkan space
 
                 // Show only icons on buttons
                 btnTambahBarang.Text = "➕";

@@ -18,7 +18,7 @@ namespace GUI
         public FormTransaksiKeluar()
         {
             InitializeComponent();
-            SetupColumnsForBarang(); // Awalnya tampilkan kolom barang
+            SetupColumnsForBarang();
             SetupComboBox();
         }
 
@@ -233,7 +233,7 @@ namespace GUI
                 var transaksiKeluar = transaksiList
                     .Where(t => t.Jenis != null && t.Jenis.Equals("Keluar", StringComparison.OrdinalIgnoreCase))
                     .OrderByDescending(t => t.Tanggal)
-                    .Take(10) // Ambil 10 transaksi terbaru
+                    .Take(10) 
                     .ToList();
 
                 if (transaksiKeluar.Count == 0)
