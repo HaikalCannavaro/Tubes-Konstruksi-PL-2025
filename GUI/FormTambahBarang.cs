@@ -3,8 +3,8 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using AplikasiInventarisToko.Helpers; 
-using AplikasiInventarisToko.Models; 
+using AplikasiInventarisToko.Helpers;
+using AplikasiInventarisToko.Models;
 
 namespace AplikasiInventarisToko.GUI
 {
@@ -38,7 +38,8 @@ namespace AplikasiInventarisToko.GUI
                 }
 
                 // Gunakan Design Pattern Factory Method untuk membuat objek Barang
-                Barang barang = BarangFactory.Create(
+                // Tipe variabel adalah IBarang, yang diimplementasikan oleh Barang
+                IBarang barang = BarangFactory.Create(
                     textBoxNamaBarang.Text,
                     textBoxKategori.Text,
                     stok,
@@ -51,7 +52,6 @@ namespace AplikasiInventarisToko.GUI
                 client.BaseAddress = new Uri("https://localhost:7123");
 
                 var response = await client.PostAsJsonAsync("/api/Barang", barang);
-
                 if (response.IsSuccessStatusCode)
                 {
                     MessageBox.Show("Barang berhasil ditambahkan!", "Sukses", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -76,7 +76,7 @@ namespace AplikasiInventarisToko.GUI
 
         private void FormTambahBarang_Load(object sender, EventArgs e)
         {
-
+            // Kosongkan
         }
     }
 }
